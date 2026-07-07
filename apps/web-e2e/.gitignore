@@ -1,0 +1,8 @@
+node_modules/
+playwright-report/
+test-results/
+.env.test
+
+# Auth state — regenerated at test run time
+# Uncomment to also ignore snapshots (if you don't commit them)
+# tests/visual/snapshots/

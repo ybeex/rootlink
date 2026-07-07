@@ -1,0 +1,34 @@
+{
+  "version": "7",
+  "dialect": "postgresql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "7",
+      "when": 1718000000000,
+      "tag": "0000_initial_schema",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1718600000000,
+      "tag": "0001_refresh_token_selector",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1718650000000,
+      "tag": "0002_idempotency_composite_key",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1718660000000,
+      "tag": "0003_user_is_admin",
+      "breakpoints": true
+    }
+  ]
+}

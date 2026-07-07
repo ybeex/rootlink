@@ -1,0 +1,38 @@
+{
+  "name": "RootLink",
+  "short_name": "RootLink",
+  "description": "Discover and preserve your family heritage",
+  "start_url": "/dashboard",
+  "display": "standalone",
+  "background_color": "#F7F5F1",
+  "theme_color": "#152F28",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable any"
+    },
+    {
+      "src": "/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable any"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "My Trees",
+      "url": "/dashboard",
+      "description": "View your family trees"
+    },
+    {
+      "name": "Search",
+      "url": "/search",
+      "description": "Search people and trees"
+    }
+  ],
+  "categories": ["lifestyle", "utilities"],
+  "lang": "en"
+}

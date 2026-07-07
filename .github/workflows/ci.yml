@@ -1,0 +1,422 @@
+name: CI / CD
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  NODE_VERSION: '22'
+  REGISTRY:     ghcr.io
+  IMAGE_PREFIX: ${{ github.repository_owner }}/rootlink
+
+jobs:
+  # ── Quality ──────────────────────────────────────────────────────────────────
+  quality:
+    name: Lint & Typecheck
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build shared packages
+        run: |
+          npm run build --workspace=packages/shared
+          npm run build --workspace=packages/db
+
+      - name: Typecheck all packages
+        run: npm run typecheck
+
+      - name: Lint all packages
+        run: npm run lint
+
+  # ── Dependency vulnerability audit ───────────────────────────────────────────
+  #
+  # Complements Dependabot (.github/dependabot.yml), which opens PRs for
+  # outdated packages on a weekly cadence — this job is the fast-feedback
+  # loop that runs on every push/PR. Set to continue-on-error so a new
+  # zero-day advisory in a transitive dependency doesn't block unrelated
+  # PRs; the summary step still surfaces findings prominently for review.
+  dependency-audit:
+    name: Dependency Audit
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: npm audit (high + critical)
+        id: audit
+        continue-on-error: true
+        run: |
+          npm audit --audit-level=high --omit=dev > audit-report.txt 2>&1 || true
+          cat audit-report.txt
+
+      - name: Summarize findings
+        if: always()
+        run: |
+          echo "## Dependency Audit" >> "$GITHUB_STEP_SUMMARY"
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
+          cat audit-report.txt >> "$GITHUB_STEP_SUMMARY"
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload audit report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: npm-audit-report
+          path: audit-report.txt
+          retention-days: 30
+
+  # ── Unit + Integration tests ─────────────────────────────────────────────────
+  unit-tests:
+    name: Unit & Integration Tests
+    runs-on: ubuntu-latest
+    needs: quality
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB:       rootlink_test
+          POSTGRES_USER:     rootlink
+          POSTGRES_PASSWORD: rootlink_test
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+        ports: ['5432:5432']
+
+      redis:
+        image: redis:7-alpine
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 10
+        ports: ['6379:6379']
+
+    env:
+      DATABASE_URL:               postgresql://rootlink:rootlink_test@localhost:5432/rootlink_test
+      REDIS_URL:                  redis://localhost:6379
+      JWT_ACCESS_SECRET:          test_access_secret_32_chars_minimum_xxxxxxxxx
+      JWT_REFRESH_SECRET:         test_refresh_secret_32_chars_minimum_xxxxxxxx
+      STORAGE_BUCKET:             rootlink-test
+      STORAGE_ACCESS_KEY_ID:      minioadmin
+      STORAGE_SECRET_ACCESS_KEY:  minioadmin
+      STORAGE_REGION:             us-east-1
+      NODE_ENV:                   test
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build shared packages
+        run: |
+          npm run build --workspace=packages/shared
+          npm run build --workspace=packages/db
+
+      - name: Run DB migrations
+        run: npm run migrate --workspace=packages/db
+        env:
+          DATABASE_URL: postgresql://rootlink:rootlink_test@localhost:5432/rootlink_test
+
+      - name: Run API tests
+        run: npm run test --workspace=apps/api
+
+      - name: Upload coverage
+        uses: codecov/codecov-action@v4
+        if: always()
+        with:
+          directory: apps/api/coverage
+          flags:     api
+
+  # ── E2E tests ────────────────────────────────────────────────────────────────
+  e2e-tests:
+    name: E2E Tests
+    runs-on: ubuntu-latest
+    needs: unit-tests
+    if: github.event_name == 'push' || github.event.pull_request.draft == false
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB:       rootlink_e2e
+          POSTGRES_USER:     rootlink
+          POSTGRES_PASSWORD: rootlink_e2e
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+        ports: ['5432:5432']
+
+      redis:
+        image: redis:7-alpine
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 10
+        ports: ['6379:6379']
+
+      minio:
+        image: minio/minio:latest
+        env:
+          MINIO_ROOT_USER:     rootlink
+          MINIO_ROOT_PASSWORD: rootlink_e2e_secret
+        options: >-
+          --health-cmd "curl -f http://localhost:9000/minio/health/live"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports: ['9000:9000']
+
+    env:
+      DATABASE_URL:               postgresql://rootlink:rootlink_e2e@localhost:5432/rootlink_e2e
+      REDIS_URL:                  redis://localhost:6379
+      JWT_ACCESS_SECRET:          e2e_access_secret_32_chars_minimum_xxxxxxxxxx
+      JWT_REFRESH_SECRET:         e2e_refresh_secret_32_chars_minimum_xxxxxxxxx
+      STORAGE_ENDPOINT:           http://localhost:9000
+      STORAGE_BUCKET:             rootlink-e2e
+      STORAGE_ACCESS_KEY_ID:      rootlink
+      STORAGE_SECRET_ACCESS_KEY:  rootlink_e2e_secret
+      STORAGE_REGION:             us-east-1
+      STORAGE_PUBLIC_URL:         http://localhost:9000/rootlink-e2e
+      FROM_EMAIL:                 noreply@rootlink.test
+      APP_URL:                    http://localhost:3000
+      API_URL:                    http://localhost:3001
+      CORS_ORIGINS:               http://localhost:3000
+      NODE_ENV:                   test
+      ENABLE_AI_FEATURES:         'false'
+      # E2E test account credentials
+      E2E_USER_EMAIL:             e2e@rootlink.test
+      E2E_USER_PASSWORD:          E2ePassword123!
+      E2E_USER2_EMAIL:            e2e-collaborator@rootlink.test
+      E2E_USER2_PASSWORD:         E2ePassword123!
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build shared packages
+        run: |
+          npm run build --workspace=packages/shared
+          npm run build --workspace=packages/db
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium
+        working-directory: apps/web-e2e
+
+      - name: Run DB migrations
+        run: npm run migrate --workspace=packages/db
+
+      - name: Setup MinIO bucket
+        run: |
+          curl -s https://dl.min.io/client/mc/release/linux-amd64/mc -o /tmp/mc
+          chmod +x /tmp/mc
+          /tmp/mc alias set local http://localhost:9000 rootlink rootlink_e2e_secret
+          /tmp/mc mb --ignore-existing local/rootlink-e2e
+
+      - name: Start API server
+        run: |
+          npm run build --workspace=apps/api
+          node apps/api/dist/server.js &
+          echo $! > /tmp/api.pid
+          # Wait for API to be ready
+          timeout 30 bash -c 'until curl -sf http://localhost:3001/health/live; do sleep 1; done'
+        env:
+          PORT: 3001
+          HOST: 0.0.0.0
+
+      - name: Start web server
+        run: |
+          NEXT_PUBLIC_API_URL=http://localhost:3001 \
+          NEXT_PUBLIC_WS_URL=ws://localhost:3001 \
+          npm run build --workspace=apps/web
+          NEXT_PUBLIC_API_URL=http://localhost:3001 \
+          npx next start --port 3000 --dir apps/web &
+          echo $! > /tmp/web.pid
+          timeout 30 bash -c 'until curl -sf http://localhost:3000; do sleep 1; done'
+
+      - name: Seed E2E test data
+        run: npm run seed:e2e
+        working-directory: apps/web-e2e
+        env:
+          API_URL:            http://localhost:3001
+          BASE_URL:           http://localhost:3000
+          E2E_USER_EMAIL:     e2e@rootlink.test
+          E2E_USER_PASSWORD:  E2ePassword123!
+          E2E_USER2_EMAIL:    e2e-collaborator@rootlink.test
+          E2E_USER2_PASSWORD: E2ePassword123!
+
+      - name: Run E2E smoke tests
+        run: npm run test:ci
+        working-directory: apps/web-e2e
+        env:
+          BASE_URL:           http://localhost:3000
+          API_URL:            http://localhost:3001
+          E2E_USER_EMAIL:     e2e@rootlink.test
+          E2E_USER_PASSWORD:  E2ePassword123!
+
+      - name: Upload Playwright report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name:              playwright-report
+          path:              apps/web-e2e/playwright-report/
+          retention-days:    7
+
+      - name: Upload test screenshots (on failure)
+        uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name:           e2e-screenshots
+          path:           apps/web-e2e/test-results/
+          retention-days: 3
+
+  # ── Build Docker images ──────────────────────────────────────────────────────
+  build:
+    name: Build Images
+    runs-on: ubuntu-latest
+    needs: [unit-tests, e2e-tests]
+    if: github.event_name == 'push'
+    permissions:
+      contents: read
+      packages: write
+
+    outputs:
+      api-digest: ${{ steps.build-api.outputs.digest }}
+      web-digest: ${{ steps.build-web.outputs.digest }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata (API)
+        id: meta-api
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}-api
+          tags: |
+            type=ref,event=branch
+            type=sha,prefix=sha-
+            type=raw,value=latest,enable=${{ github.ref == 'refs/heads/main' }}
+
+      - name: Build and push API image
+        id: build-api
+        uses: docker/build-push-action@v5
+        with:
+          context:    .
+          file:       apps/api/Dockerfile
+          push:       true
+          tags:       ${{ steps.meta-api.outputs.tags }}
+          labels:     ${{ steps.meta-api.outputs.labels }}
+          cache-from: type=gha
+          cache-to:   type=gha,mode=max
+
+      - name: Extract metadata (Web)
+        id: meta-web
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}-web
+          tags: |
+            type=ref,event=branch
+            type=sha,prefix=sha-
+            type=raw,value=latest,enable=${{ github.ref == 'refs/heads/main' }}
+
+      - name: Build and push Web image
+        id: build-web
+        uses: docker/build-push-action@v5
+        with:
+          context:    .
+          file:       apps/web/Dockerfile
+          push:       true
+          tags:       ${{ steps.meta-web.outputs.tags }}
+          labels:     ${{ steps.meta-web.outputs.labels }}
+          cache-from: type=gha
+          cache-to:   type=gha,mode=max
+
+  # ── Deploy staging ───────────────────────────────────────────────────────────
+  deploy-staging:
+    name: Deploy to Staging
+    runs-on: ubuntu-latest
+    needs: build
+    if: github.ref == 'refs/heads/develop'
+    environment:
+      name: staging
+      url:  https://staging.rootlink.app
+
+    steps:
+      - name: Deploy API to staging
+        run: |
+          echo "Deploy API ${{ needs.build.outputs.api-digest }} to staging"
+          # kubectl set image deployment/rootlink-api api=${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}-api@${{ needs.build.outputs.api-digest }}
+
+      - name: Deploy Web to staging
+        run: |
+          echo "Deploy Web ${{ needs.build.outputs.web-digest }} to staging"
+          # kubectl set image deployment/rootlink-web web=${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}-web@${{ needs.build.outputs.web-digest }}
+
+  # ── Deploy production ────────────────────────────────────────────────────────
+  deploy-production:
+    name: Deploy to Production
+    runs-on: ubuntu-latest
+    needs: build
+    if: github.ref == 'refs/heads/main'
+    environment:
+      name: production
+      url:  https://rootlink.app
+
+    steps:
+      - name: Deploy API to production
+        run: |
+          echo "Deploy API ${{ needs.build.outputs.api-digest }} to production"
+          # kubectl set image deployment/rootlink-api api=${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}-api@${{ needs.build.outputs.api-digest }}
+
+      - name: Deploy Web to production
+        run: |
+          echo "Deploy Web ${{ needs.build.outputs.web-digest }} to production"
+          # kubectl set image deployment/rootlink-web web=${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}-web@${{ needs.build.outputs.web-digest }}

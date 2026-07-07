@@ -1,0 +1,46 @@
+{
+  "name": "rootlink",
+  "version": "1.0.0",
+  "private": true,
+  "description": "RootLink \u2014 Next-Generation Family Tree & Heritage Platform",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "turbo run dev",
+    "build": "turbo run build",
+    "test": "turbo run test",
+    "lint": "turbo run lint",
+    "typecheck": "turbo run typecheck",
+    "db:migrate": "npm run migrate --workspace=packages/db",
+    "db:seed": "npm run seed --workspace=packages/db",
+    "clean": "find . -name 'node_modules' -type d -prune -exec rm -rf '{}' +",
+    "test:e2e": "npm run test --workspace=apps/web-e2e",
+    "test:e2e:smoke": "npm run test:smoke --workspace=apps/web-e2e",
+    "seed:e2e": "npm run seed --workspace=apps/web-e2e"
+  },
+  "engines": {
+    "node": ">=22.0.0",
+    "npm": ">=10.0.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.3",
+    "@typescript-eslint/eslint-plugin": "^8.20.0",
+    "@typescript-eslint/parser": "^8.20.0",
+    "eslint": "^9.18.0",
+    "prettier": "^3.4.2",
+    "husky": "^9.1.7",
+    "lint-staged": "^15.3.0",
+    "turbo": "^2.3.3"
+  },
+  "lint-staged": {
+    "*.{ts,tsx}": [
+      "eslint --fix",
+      "prettier --write"
+    ],
+    "*.{json,md}": [
+      "prettier --write"
+    ]
+  }
+}

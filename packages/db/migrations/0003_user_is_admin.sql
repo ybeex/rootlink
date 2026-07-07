@@ -1,0 +1,11 @@
+-- Adds is_admin to users, gating the new operational dashboard (Bull Board,
+-- mounted at /admin/queues) added to close audit finding P4 — previously a
+-- failed background job (a stuck GEDCOM import, a permanently-failed media
+-- deletion) was visible only by reading worker logs directly; there was no
+-- way for anyone, including the account holder running this instance, to
+-- see failure state from inside the product itself.
+--
+-- Defaults to false for every existing row. There is deliberately no way
+-- to self-promote through the API — the first admin account must be granted
+-- by updating this column directly against the database.
+ALTER TABLE "users" ADD COLUMN "is_admin" boolean DEFAULT false NOT NULL;

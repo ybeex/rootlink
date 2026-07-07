@@ -1,0 +1,36 @@
+{
+  "name": "@rootlink/web-e2e",
+  "version": "1.0.0",
+  "private": true,
+  "description": "End-to-end tests for RootLink web application",
+  "scripts": {
+    "test": "playwright test",
+    "test:headed": "playwright test --headed",
+    "test:debug": "playwright test --debug",
+    "test:ui": "playwright test --ui",
+    "test:auth": "playwright test tests/auth/",
+    "test:tree": "playwright test tests/tree/",
+    "test:person": "playwright test tests/person/",
+    "test:media": "playwright test tests/media/",
+    "test:smoke": "playwright test --grep @smoke",
+    "test:ci": "playwright test --reporter=github",
+    "codegen": "playwright codegen http://localhost:3000",
+    "report": "playwright show-report",
+    "seed": "tsx scripts/seed-e2e.ts",
+    "install-browsers": "playwright install --with-deps chromium firefox webkit",
+    "test:visual": "playwright test tests/visual/",
+    "test:performance": "playwright test tests/performance/",
+    "test:accessibility": "playwright test tests/accessibility/",
+    "update-snapshots": "playwright test tests/visual/ --update-snapshots"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.49.1",
+    "@types/node": "^22.13.1",
+    "typescript": "^5.7.3",
+    "dotenv": "^16.4.7",
+    "tsx": "^4.19.2"
+  },
+  "dependencies": {
+    "faker": "^9.3.0"
+  }
+}
