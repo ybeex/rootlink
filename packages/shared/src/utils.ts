@@ -82,6 +82,49 @@ export function redactLivingPerson(person: PersonSummary): PersonSummary {
   };
 }
 
+export function redactPrivatePerson(person: PersonSummary): PersonSummary {
+  return {
+    ...person,
+    displayName: 'Private',
+    birthYear: null,
+    profileMediaUrl: null,
+  };
+}
+
+/**
+ * Determines whether a person's own privacyLevel excludes them from a given
+ * viewer, independent of the isLiving check above (both apply — a person
+ * can be hidden for either reason, or both).
+ *
+ * This wires in the `persons.privacyLevel` column, which existed in the
+ * schema since the initial build and was written on person creation, but
+ * was never read by any access-control decision — see the PRD audit,
+ * Finding #2.3. Semantics, applied per privacy level:
+ *   - 'public':  visible to anyone who can already view the tree at all,
+ *                including anonymous share-link viewers.
+ *   - 'family':  visible to any authenticated tree member (any role), but
+ *                NOT to anonymous share-link viewers — "family" means
+ *                people who were actually invited, not the general public.
+ *   - 'private': visible only to editor role or above (editor/admin/owner)
+ *                — narrower than "family," which also includes viewer and
+ *                contributor roles.
+ */
+export function isPersonPrivacyRestricted(
+  person: { privacyLevel: 'public' | 'family' | 'private' },
+  viewer: { role: 'viewer' | 'contributor' | 'editor' | 'admin' | 'owner' | null; isShareTokenViewer: boolean },
+): boolean {
+  if (person.privacyLevel === 'public') return false;
+
+  if (person.privacyLevel === 'family') {
+    return viewer.isShareTokenViewer || viewer.role === null;
+  }
+
+  // 'private': requires at least editor
+  const ROLE_RANK: Record<string, number> = { viewer: 1, contributor: 2, editor: 3, admin: 4, owner: 5 };
+  if (viewer.isShareTokenViewer || viewer.role === null) return true;
+  return ROLE_RANK[viewer.role] < ROLE_RANK.editor;
+}
+
 // ─── Relationship path display ────────────────────────────────────────────────
 
 export function formatRelationshipType(type: string): string {
