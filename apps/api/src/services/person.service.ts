@@ -6,8 +6,12 @@ import type {
   SearchPersonInput,
   PaginatedResponse,
   PersonSummary,
+  TreeRole,
 } from '@rootlink/shared';
-import { computeDataQualityScore, getDisplayName, redactLivingPerson, CACHE_TTL, WS_EVENTS, SUBSCRIPTION_LIMITS } from '@rootlink/shared';
+import {
+  computeDataQualityScore, getDisplayName, redactLivingPerson, redactPrivatePerson,
+  isPersonPrivacyRestricted, CACHE_TTL, WS_EVENTS, SUBSCRIPTION_LIMITS,
+} from '@rootlink/shared';
 import { cacheGet, cacheSet, cacheDelPattern } from '../lib/redis.js';
 import { aiHintQueue, dataQualityQueue } from '../workers/queues.js';
 import { publishTreeEvent } from '../plugins/websocket.js';
@@ -20,13 +24,16 @@ export class PersonService {
   async listPersons(
     treeId: string,
     query: SearchPersonInput,
-    options: { redactLiving?: boolean } = {},
+    options: { redactLiving?: boolean; viewerRole?: TreeRole | null; isShareTokenViewer?: boolean } = {},
   ): Promise<PaginatedResponse<PersonSummary>> {
-    const { redactLiving = false } = options;
+    const { redactLiving = false, viewerRole = null, isShareTokenViewer = false } = options;
     // Redacted (share-token / public) results are cached under a distinct key
     // so a redacted response is never served to an authenticated tree member
-    // and vice versa.
-    const cacheKey = `persons:${treeId}:${redactLiving ? 'redacted' : 'full'}:${JSON.stringify(query)}`;
+    // and vice versa. viewerRole is now part of the key too: privacy-level
+    // redaction (isPersonPrivacyRestricted) varies by role, not just by
+    // share-token status, so a cached "full" response for an editor must
+    // never be served to a lower-privileged contributor from the same cache.
+    const cacheKey = `persons:${treeId}:${redactLiving ? 'redacted' : 'full'}:${viewerRole ?? 'none'}:${JSON.stringify(query)}`;
     const cached = await cacheGet<PaginatedResponse<PersonSummary>>(cacheKey);
     if (cached) return cached;
 
@@ -73,6 +80,7 @@ export class PersonService {
           deathYear: persons.deathYear,
           profileMediaId: persons.profileMediaId,
           dataQualityScore: persons.dataQualityScore,
+          privacyLevel: persons.privacyLevel,
         })
         .from(persons)
         .where(whereClause)
@@ -103,7 +111,12 @@ export class PersonService {
           profileMediaUrl: null, // Resolved by media service in full response
           dataQualityScore: r.dataQualityScore,
         };
-        return redactLiving ? redactLivingPerson(summary) : summary;
+        let visible = summary;
+        if (redactLiving) visible = redactLivingPerson(visible);
+        if (isPersonPrivacyRestricted({ privacyLevel: r.privacyLevel }, { role: viewerRole, isShareTokenViewer })) {
+          visible = redactPrivatePerson(visible);
+        }
+        return visible;
       }),
       pagination: {
         total,
