@@ -30,7 +30,11 @@ export async function personRoutes(app: FastifyInstance) {
         });
       }
       const redactLiving = request.viewPermission?.viaShareToken ?? false;
-      const result = await personService.listPersons(request.params.treeId, parsed.data, { redactLiving });
+      const result = await personService.listPersons(request.params.treeId, parsed.data, {
+        redactLiving,
+        viewerRole: request.viewPermission?.role ?? null,
+        isShareTokenViewer: request.viewPermission?.viaShareToken ?? false,
+      });
       return reply.send({
         success: true,
         ...result,
@@ -49,7 +53,11 @@ export async function personRoutes(app: FastifyInstance) {
       const person = await personService.getPerson(
         request.params.treeId,
         request.params.personId,
-        { redactLiving },
+        {
+          redactLiving,
+          viewerRole: request.viewPermission?.role ?? null,
+          isShareTokenViewer: request.viewPermission?.viaShareToken ?? false,
+        },
       );
       return reply.send({
         success: true,

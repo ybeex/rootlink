@@ -134,8 +134,12 @@ export class PersonService {
 
   // ─── Get One ───────────────────────────────────────────────────────────────
 
-  async getPerson(treeId: string, personId: string, options: { redactLiving?: boolean } = {}) {
-    const { redactLiving = false } = options;
+  async getPerson(
+    treeId: string,
+    personId: string,
+    options: { redactLiving?: boolean; viewerRole?: TreeRole | null; isShareTokenViewer?: boolean } = {},
+  ) {
+    const { redactLiving = false, viewerRole = null, isShareTokenViewer = false } = options;
     const cacheKey = `person:${treeId}:${personId}`;
     const cached = await cacheGet<DbPerson & { events: DbVitalEvent[] }>(cacheKey);
 
@@ -172,6 +176,22 @@ export class PersonService {
       throw createAppError(
         'PERSON_PRIVATE',
         'This person is living and their details are private on shared views',
+        403,
+      );
+    }
+
+    // Same 403-not-partial-redaction reasoning as the isLiving check above,
+    // now applied to the person's own privacyLevel column — see
+    // isPersonPrivacyRestricted's docstring for the exact per-level rules.
+    // This was schema-present and written on creation since the initial
+    // build, but never read by any access-control decision until now.
+    if (isPersonPrivacyRestricted(
+      { privacyLevel: person.privacyLevel },
+      { role: viewerRole, isShareTokenViewer },
+    )) {
+      throw createAppError(
+        'PERSON_PRIVATE',
+        'This person\'s details are marked private and are not visible at your current access level',
         403,
       );
     }
