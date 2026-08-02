@@ -447,6 +447,108 @@ export const idempotencyKeys = pgTable(
   ],
 );
 
+// ─── DNA Kits & Matching ────────────────────────────────────────────────────
+//
+// Real, working DNA-relative matching against raw autosomal genotype data
+// uploaded in the standard 23andMe/AncestryDNA/MyHeritage/FTDNA plain-text
+// export format (tab-separated: rsid, chromosome, position, genotype).
+//
+// This is NOT a wet-lab or sequencing integration — RootLink never performs
+// DNA testing itself. It matches already-tested raw data files the same way
+// GEDmatch does: a user runs a commercial test elsewhere, downloads their
+// raw data, and uploads it here to find genetic relatives among other
+// RootLink users who have done the same.
+//
+// The matching algorithm (see apps/api/src/services/dna.service.ts) is a
+// deliberately-documented SIMPLIFICATION of production-grade IBD (identical
+// by descent) detection: it finds identical-by-STATE runs of a minimum
+// length using an approximate per-chromosome cM/Mb conversion table, rather
+// than the phased-haplotype approach tools like GEDmatch/Ancestry use. This
+// is disclosed to the end user in the product UI, not just in code comments
+// — see the "how this works" copy on the DNA matches page.
+
+export const dnaKitProviderEnum = pgEnum('dna_kit_provider', [
+  'ancestrydna', '23andme', 'myheritage', 'ftdna', 'other',
+]);
+export const dnaKitStatusEnum = pgEnum('dna_kit_status', [
+  'processing', 'ready', 'failed',
+]);
+
+export const dnaKits = pgTable(
+  'dna_kits',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    uploadedBy: uuid('uploaded_by').notNull().references(() => users.id, { onDelete: 'cascade' }),
+    personId: uuid('person_id').references(() => persons.id, { onDelete: 'set null' }),
+    treeId: uuid('tree_id').references(() => trees.id, { onDelete: 'set null' }),
+    label: varchar('label', { length: 200 }).notNull(),
+    provider: dnaKitProviderEnum('provider').notNull().default('other'),
+    status: dnaKitStatusEnum('status').notNull().default('processing'),
+    rawDataStorageKey: varchar('raw_data_storage_key', { length: 1000 }).notNull(),
+    snpCount: integer('snp_count'),
+    sex: sexEnum('sex'),
+    processingError: text('processing_error'),
+    uploadedAt: timestamp('uploaded_at', { withTimezone: true }).notNull().defaultNow(),
+    processedAt: timestamp('processed_at', { withTimezone: true }),
+    deletedAt: timestamp('deleted_at', { withTimezone: true }),
+  },
+  (t) => [
+    index('dna_kits_uploaded_by_idx').on(t.uploadedBy),
+    index('dna_kits_person_idx').on(t.personId),
+    index('dna_kits_status_idx').on(t.status),
+  ],
+);
+
+export const dnaGenotypes = pgTable(
+  'dna_genotypes',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    kitId: uuid('kit_id').notNull().references(() => dnaKits.id, { onDelete: 'cascade' }),
+    chromosome: varchar('chromosome', { length: 2 }).notNull(),
+    position: integer('position').notNull(),
+    rsid: varchar('rsid', { length: 20 }),
+    genotype: varchar('genotype', { length: 2 }).notNull(),
+  },
+  (t) => [
+    index('dna_genotypes_kit_chr_pos_idx').on(t.kitId, t.chromosome, t.position),
+  ],
+);
+
+export const dnaMatches = pgTable(
+  'dna_matches',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    kitAId: uuid('kit_a_id').notNull().references(() => dnaKits.id, { onDelete: 'cascade' }),
+    kitBId: uuid('kit_b_id').notNull().references(() => dnaKits.id, { onDelete: 'cascade' }),
+    totalSharedCm: real('total_shared_cm').notNull(),
+    largestSegmentCm: real('largest_segment_cm').notNull(),
+    segmentCount: integer('segment_count').notNull(),
+    estimatedRelationship: varchar('estimated_relationship', { length: 200 }).notNull(),
+    computedAt: timestamp('computed_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    uniqueIndex('dna_matches_pair_unique').on(t.kitAId, t.kitBId),
+    index('dna_matches_kit_a_idx').on(t.kitAId),
+    index('dna_matches_kit_b_idx').on(t.kitBId),
+  ],
+);
+
+export const dnaMatchSegments = pgTable(
+  'dna_match_segments',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    matchId: uuid('match_id').notNull().references(() => dnaMatches.id, { onDelete: 'cascade' }),
+    chromosome: varchar('chromosome', { length: 2 }).notNull(),
+    startPosition: integer('start_position').notNull(),
+    endPosition: integer('end_position').notNull(),
+    cmLength: real('cm_length').notNull(),
+    snpCount: integer('snp_count').notNull(),
+  },
+  (t) => [
+    index('dna_match_segments_match_idx').on(t.matchId),
+  ],
+);
+
 // ─── Relations ────────────────────────────────────────────────────────────────
 
 export const usersRelations = relations(users, ({ many }) => ({
@@ -502,3 +604,8 @@ export type DbEditHistory = typeof editHistory.$inferSelect;
 export type DbNotification = typeof notifications.$inferSelect;
 export type DbResearchHint = typeof researchHints.$inferSelect;
 export type DbAuditLog = typeof auditLogs.$inferSelect;
+export type DbDnaKit = typeof dnaKits.$inferSelect;
+export type NewDbDnaKit = typeof dnaKits.$inferInsert;
+export type DbDnaGenotype = typeof dnaGenotypes.$inferSelect;
+export type DbDnaMatch = typeof dnaMatches.$inferSelect;
+export type DbDnaMatchSegment = typeof dnaMatchSegments.$inferSelect;
