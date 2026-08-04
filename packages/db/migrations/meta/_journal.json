@@ -29,6 +29,13 @@
       "when": 1718660000000,
       "tag": "0003_user_is_admin",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1751500000000,
+      "tag": "0004_dna_matching",
+      "breakpoints": true
     }
   ]
 }
