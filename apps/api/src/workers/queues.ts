@@ -62,6 +62,10 @@ export interface MediaDeletionJob {
   storageKeys: string[];
 }
 
+export interface DnaProcessingJob {
+  kitId: string;
+}
+
 export const mediaProcessingQueue = createQueue<MediaProcessingJob>(QUEUE_NAMES.mediaProcessing);
 export const emailQueue = createQueue<EmailNotificationJob>(QUEUE_NAMES.emailNotifications);
 export const gedcomImportQueue = createQueue<GedcomImportJob>(QUEUE_NAMES.gedcomImport);
@@ -70,6 +74,7 @@ export const aiHintQueue = createQueue<AiHintJob>(QUEUE_NAMES.aiHintGeneration);
 export const aiBioQueue = createQueue<AiBioJob>(QUEUE_NAMES.aiBioGeneration);
 export const dataQualityQueue = createQueue<DataQualityJob>(QUEUE_NAMES.dataQualityScore);
 export const mediaDeletionQueue = createQueue<MediaDeletionJob>(QUEUE_NAMES.mediaDeletion);
+export const dnaProcessingQueue = createQueue<DnaProcessingJob>(QUEUE_NAMES.dnaProcessing);
 
 export const allQueues = [
   mediaProcessingQueue,
@@ -80,4 +85,5 @@ export const allQueues = [
   aiBioQueue,
   dataQualityQueue,
   mediaDeletionQueue,
+  dnaProcessingQueue,
 ];

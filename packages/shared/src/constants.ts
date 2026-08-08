@@ -174,6 +174,7 @@ export const QUEUE_NAMES = {
   aiBioGeneration: 'ai-bio-generation',
   dataQualityScore: 'data-quality-score',
   mediaDeletion: 'media-deletion',
+  dnaProcessing: 'dna-processing',
   auditLog: 'audit-log',
 } as const;
 
