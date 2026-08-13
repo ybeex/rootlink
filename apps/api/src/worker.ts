@@ -10,6 +10,7 @@ import { startGedcomWorkers } from './workers/gedcom.worker.js';
 import { startAiWorkers } from './workers/ai.worker.js';
 import { startDataQualityWorker } from './workers/data-quality.worker.js';
 import { startMediaDeletionWorker } from './workers/media-deletion.worker.js';
+import { startDnaProcessingWorker } from './workers/dna-processing.worker.js';
 import { startCronJobs } from './workers/cron.js';
 import { allQueues } from './workers/queues.js';
 import { getRedis } from './lib/redis.js';
@@ -34,9 +35,10 @@ async function main() {
   const { bioWorker, hintWorker }      = startAiWorkers();
   const qualityWorker = startDataQualityWorker();
   const deletionWorker = startMediaDeletionWorker();
+  const dnaWorker = startDnaProcessingWorker();
   startCronJobs();
 
-  const workers = [mediaWorker, emailWorker, importWorker, exportWorker, bioWorker, hintWorker, qualityWorker, deletionWorker];
+  const workers = [mediaWorker, emailWorker, importWorker, exportWorker, bioWorker, hintWorker, qualityWorker, deletionWorker, dnaWorker];
 
   workers.forEach((w) => {
     w.on('completed', (job) => {

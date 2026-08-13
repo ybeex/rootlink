@@ -13,6 +13,7 @@ import { startGedcomWorkers } from './workers/gedcom.worker.js';
 import { startAiWorkers } from './workers/ai.worker.js';
 import { startDataQualityWorker } from './workers/data-quality.worker.js';
 import { startMediaDeletionWorker } from './workers/media-deletion.worker.js';
+import { startDnaProcessingWorker } from './workers/dna-processing.worker.js';
 
 export async function buildApp() {
   const app = Fastify({
@@ -100,6 +101,7 @@ async function main() {
     startAiWorkers();
     startDataQualityWorker();
     startMediaDeletionWorker();
+    startDnaProcessingWorker();
     startCronJobs();
     app.log.info('Background workers and cron jobs started');
   }
