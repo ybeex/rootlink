@@ -31,7 +31,13 @@
  */
 
 import { getDb, dnaKits, dnaGenotypes, dnaMatches, dnaMatchSegments } from '@rootlink/db';
-import { eq, and, or, ne, sql } from 'drizzle-orm';
+import { eq, and, ne, isNull, desc } from 'drizzle-orm';
+import { PutObjectCommand, HeadObjectCommand, DeleteObjectCommand } from '@aws-sdk/client-s3';
+import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
+import { nanoid } from 'nanoid';
+import { SUBSCRIPTION_LIMITS } from '@rootlink/shared';
+import { getS3 } from '../lib/s3.js';
+import { env } from '../config/env.js';
 import { createAppError } from '../lib/errors.js';
 
 // ─── Approximate genetic map ────────────────────────────────────────────────
@@ -388,4 +394,196 @@ export async function runMatchingForKit(kitId: string): Promise<number> {
   }
 
   return matchesFound;
+}
+
+// ─── Upload & kit management ────────────────────────────────────────────────
+//
+// DNA raw data files are NOT routed through media.service.ts's mediaAssets
+// pipeline — they are a distinct data type (plain-text genomic data, never
+// thumbnailed, never shown in a photo/document gallery) with a much larger
+// realistic size ceiling than a photo or scanned document.
+
+const MAX_DNA_RAW_FILE_BYTES = 100 * 1024 * 1024; // 100 MB — real exports run ~10-30MB as plain text; generous headroom without being unbounded
+
+function requireDnaTierAccess(subscriptionTier: string): void {
+  const limits = SUBSCRIPTION_LIMITS[subscriptionTier as keyof typeof SUBSCRIPTION_LIMITS]
+    ?? SUBSCRIPTION_LIMITS.free;
+  if (!limits.canAccessDna) {
+    throw createAppError(
+      'DNA_NOT_AVAILABLE',
+      'DNA matching is available on the Pro plan. Upgrade to upload a DNA kit.',
+      403,
+    );
+  }
+}
+
+export interface CreateDnaUploadInput {
+  label: string;
+  provider: 'ancestrydna' | '23andme' | 'myheritage' | 'ftdna' | 'other';
+  fileSizeBytes: number;
+  personId?: string | null;
+  treeId?: string | null;
+}
+
+export async function createDnaUploadUrl(
+  userId: string,
+  subscriptionTier: string,
+  input: CreateDnaUploadInput,
+): Promise<{ kitId: string; uploadUrl: string; storageKey: string }> {
+  requireDnaTierAccess(subscriptionTier);
+
+  if (input.fileSizeBytes <= 0 || input.fileSizeBytes > MAX_DNA_RAW_FILE_BYTES) {
+    throw createAppError(
+      'VALIDATION_ERROR',
+      `File size must be between 1 byte and ${MAX_DNA_RAW_FILE_BYTES / (1024 * 1024)} MB.`,
+      400,
+    );
+  }
+
+  const { db } = getDb();
+  const storageKey = `dna-raw/${userId}/${nanoid(16)}.txt`;
+
+  const [kit] = await db.insert(dnaKits).values({
+    uploadedBy: userId,
+    personId: input.personId ?? null,
+    treeId: input.treeId ?? null,
+    label: input.label,
+    provider: input.provider,
+    status: 'processing',
+    rawDataStorageKey: storageKey,
+  }).returning({ id: dnaKits.id });
+
+  if (!kit) throw createAppError('INTERNAL_ERROR', 'Failed to create DNA kit record', 500);
+
+  const s3 = getS3();
+  const uploadUrl = await getSignedUrl(
+    s3,
+    new PutObjectCommand({
+      Bucket: env.STORAGE_BUCKET,
+      Key: storageKey,
+      ContentType: 'text/plain',
+    }),
+    { expiresIn: 900 }, // 15 minutes — a 10-30MB upload on a slow connection needs real headroom
+  );
+
+  return { kitId: kit.id, uploadUrl, storageKey };
+}
+
+/**
+ * Confirms the raw file actually landed in S3 (a HeadObject check — same
+ * honesty pattern media.service.ts uses: never trust that a presigned PUT
+ * the client claims to have completed actually happened) and enqueues
+ * parsing/matching. Processing itself happens in dna-processing.worker.ts,
+ * not here — this function only validates and hands off.
+ */
+export async function confirmDnaUpload(kitId: string, userId: string): Promise<void> {
+  const { db } = getDb();
+  const [kit] = await db.select().from(dnaKits).where(eq(dnaKits.id, kitId)).limit(1);
+
+  if (!kit) throw createAppError('DNA_KIT_NOT_FOUND', 'DNA kit not found', 404);
+  if (kit.uploadedBy !== userId) throw createAppError('FORBIDDEN', 'You do not own this DNA kit', 403);
+
+  const s3 = getS3();
+  try {
+    await s3.send(new HeadObjectCommand({ Bucket: env.STORAGE_BUCKET, Key: kit.rawDataStorageKey }));
+  } catch {
+    throw createAppError(
+      'DNA_UPLOAD_NOT_FOUND',
+      'The raw data file was not found in storage — the upload may not have completed. Try again.',
+      400,
+    );
+  }
+
+  // Dynamic import avoids a circular dependency: the worker module imports
+  // FROM this service file (parseRawDnaFile, runMatchingForKit), so this
+  // service cannot import the worker's enqueue helper at the top level.
+  const { enqueueDnaProcessing } = await import('../workers/dna-processing.worker.js');
+  await enqueueDnaProcessing(kitId);
+}
+
+export async function listDnaKits(userId: string) {
+  const { db } = getDb();
+  return db
+    .select()
+    .from(dnaKits)
+    .where(and(eq(dnaKits.uploadedBy, userId), isNull(dnaKits.deletedAt)))
+    .orderBy(desc(dnaKits.uploadedAt));
+}
+
+export async function getDnaKit(kitId: string, userId: string) {
+  const { db } = getDb();
+  const [kit] = await db
+    .select()
+    .from(dnaKits)
+    .where(and(eq(dnaKits.id, kitId), eq(dnaKits.uploadedBy, userId), isNull(dnaKits.deletedAt)))
+    .limit(1);
+
+  if (!kit) throw createAppError('DNA_KIT_NOT_FOUND', 'DNA kit not found', 404);
+  return kit;
+}
+
+export async function deleteDnaKit(kitId: string, userId: string): Promise<void> {
+  const { db } = getDb();
+  const kit = await getDnaKit(kitId, userId); // also verifies ownership, throws 404 otherwise
+
+  // Genotype rows and match/segment rows all cascade-delete at the FK
+  // level (ON DELETE CASCADE) once the kit row itself is gone — only the
+  // S3 object and the kit row need explicit handling here.
+  const s3 = getS3();
+  await s3.send(new DeleteObjectCommand({ Bucket: env.STORAGE_BUCKET, Key: kit.rawDataStorageKey })).catch(() => undefined);
+
+  await db.update(dnaKits).set({ deletedAt: new Date() }).where(eq(dnaKits.id, kitId));
+}
+
+export interface DnaMatchListItem {
+  matchId: string;
+  otherKitId: string;
+  otherKitLabel: string;
+  otherKitOwnerId: string;
+  totalSharedCm: number;
+  largestSegmentCm: number;
+  segmentCount: number;
+  estimatedRelationship: string;
+  computedAt: Date;
+}
+
+export async function listMatchesForKit(kitId: string, userId: string): Promise<DnaMatchListItem[]> {
+  await getDnaKit(kitId, userId); // ownership + existence check
+
+  const { db } = getDb();
+
+  const kitAlias = dnaKits;
+  const rowsA = await db
+    .select({
+      matchId: dnaMatches.id,
+      otherKitId: dnaMatches.kitBId,
+      totalSharedCm: dnaMatches.totalSharedCm,
+      largestSegmentCm: dnaMatches.largestSegmentCm,
+      segmentCount: dnaMatches.segmentCount,
+      estimatedRelationship: dnaMatches.estimatedRelationship,
+      computedAt: dnaMatches.computedAt,
+      otherKitLabel: kitAlias.label,
+      otherKitOwnerId: kitAlias.uploadedBy,
+    })
+    .from(dnaMatches)
+    .innerJoin(kitAlias, eq(kitAlias.id, dnaMatches.kitBId))
+    .where(eq(dnaMatches.kitAId, kitId));
+
+  const rowsB = await db
+    .select({
+      matchId: dnaMatches.id,
+      otherKitId: dnaMatches.kitAId,
+      totalSharedCm: dnaMatches.totalSharedCm,
+      largestSegmentCm: dnaMatches.largestSegmentCm,
+      segmentCount: dnaMatches.segmentCount,
+      estimatedRelationship: dnaMatches.estimatedRelationship,
+      computedAt: dnaMatches.computedAt,
+      otherKitLabel: kitAlias.label,
+      otherKitOwnerId: kitAlias.uploadedBy,
+    })
+    .from(dnaMatches)
+    .innerJoin(kitAlias, eq(kitAlias.id, dnaMatches.kitAId))
+    .where(eq(dnaMatches.kitBId, kitId));
+
+  return [...rowsA, ...rowsB].sort((a, b) => b.totalSharedCm - a.totalSharedCm);
 }
