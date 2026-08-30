@@ -410,7 +410,7 @@ function requireDnaTierAccess(subscriptionTier: string): void {
     ?? SUBSCRIPTION_LIMITS.free;
   if (!limits.canAccessDna) {
     throw createAppError(
-      'DNA_NOT_AVAILABLE',
+      'SUBSCRIPTION_REQUIRED',
       'DNA matching is available on the Pro plan. Upgrade to upload a DNA kit.',
       403,
     );
