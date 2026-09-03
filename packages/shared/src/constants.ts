@@ -26,6 +26,8 @@ export const ERROR_CODES = {
   PERSON_NOT_FOUND: 'RES_002',
   TREE_NOT_FOUND: 'RES_003',
   MEDIA_NOT_FOUND: 'RES_004',
+  DNA_KIT_NOT_FOUND: 'RES_005',
+  DNA_UPLOAD_NOT_FOUND: 'RES_006',
 
   // Business logic
   SELF_RELATIONSHIP: 'BIZ_001',
@@ -36,6 +38,7 @@ export const ERROR_CODES = {
   PERSON_LIMIT_REACHED: 'BIZ_006',
   SUBSCRIPTION_REQUIRED: 'BIZ_007',
   PERSON_PRIVATE: 'BIZ_008',
+  DNA_KIT_NOT_READY: 'BIZ_009',
 
   // Rate limiting
   RATE_LIMIT_EXCEEDED: 'RATE_001',
@@ -48,7 +51,7 @@ export const ERROR_CODES = {
   STORAGE_ERROR: 'SRV_004',
 } as const;
 
-export type ErrorCode = (typeof ERROR_CODES)[keyof typeof ERROR_CODES];
+export type ErrorCode = keyof typeof ERROR_CODES;
 
 // ─── Subscription Limits ──────────────────────────────────────────────────────
 
