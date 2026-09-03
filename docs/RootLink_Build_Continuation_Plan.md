@@ -1,3 +1,17 @@
+> **Update (later session):** Section 2 below (DNA routes + frontend) is now fully built.
+> The bottom-of-file git log reflects only the session that *wrote* this plan — run
+> `git log --oneline` in the repo for the true current state; the newest commits are the
+> `dna.routes.ts`, `ErrorCode` type fix, DNA error-code registration, and DNA frontend work
+> (kit list page, match list page, sidebar nav entry, disclosure panel). The rest of this
+> document (§3 API Access, §4 Offline/PWA, §5 remaining PRD gaps) is unchanged and still
+> accurately describes what's left. Section 2 is left in place below as a historical record
+> of what was planned and built, not as an open task list.
+>
+> **One deliberate scope-narrowing versus the original §2.2 spec:** the kit-upload UI does
+> not expose the `personId`/`treeId` linking fields that `createDnaUploadUrl` accepts —
+> kits upload unlinked to any tree/person for now. Linking a kit to a specific person in a
+> tree is real, not-yet-built scope, not a bug — the API already accepts it.
+
 # RootLink — Build Continuation Plan
 
 **Written at a deliberate pause point, not a natural stopping point** — this session hit four unrecoverable sandbox resets while building the DNA matching feature, and rather than keep absorbing that cost, work was paused to package the current state cleanly and document exactly what's left, with enough precision that any future session (mine or a human developer's) can resume cold without re-deriving anything.
