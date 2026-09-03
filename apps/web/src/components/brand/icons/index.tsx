@@ -128,6 +128,26 @@ export function AdminNavIcon({ size = 20, color = 'currentColor', className }: N
   );
 }
 
+/** DNA — double helix, matches the stroke weight/rounding of the other nav icons */
+export function DnaNavIcon({ size = 20, color = 'currentColor', className }: NavIconProps) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 20 20" fill="none" className={className}>
+      {/* Two interleaving strands */}
+      <path
+        d="M6 2 C6 5, 14 5, 14 8 C14 11, 6 11, 6 14 C6 17, 14 17, 14 18"
+        stroke={color} strokeWidth="1.5" strokeLinecap="round" fill="none" />
+      <path
+        d="M14 2 C14 5, 6 5, 6 8 C6 11, 14 11, 14 14 C14 17, 6 17, 6 18"
+        stroke={color} strokeWidth="1.5" strokeLinecap="round" fill="none" />
+      {/* Rungs at each crossing */}
+      <line x1="6.6" y1="4.1" x2="13.4" y2="4.1" stroke={color} strokeWidth="1.25" strokeLinecap="round" />
+      <line x1="6" y1="8" x2="14" y2="8" stroke={color} strokeWidth="1.25" strokeLinecap="round" />
+      <line x1="6.6" y1="11.9" x2="13.4" y2="11.9" stroke={color} strokeWidth="1.25" strokeLinecap="round" />
+      <line x1="6" y1="15.9" x2="14" y2="15.9" stroke={color} strokeWidth="1.25" strokeLinecap="round" />
+    </svg>
+  );
+}
+
 // ───────────────────────────────────────────────────────────────────────────
 // FEATURE ICONS — isometric 3D cube-face treatment (48–64px)
 // Used in landing page feature sections, onboarding steps, empty states

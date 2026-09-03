@@ -14,7 +14,7 @@ import type { User } from '@rootlink/shared';
 import { RootLinkIcon } from '../../components/brand/Logo';
 import {
   TreeNavIcon, PeopleNavIcon, MediaNavIcon,
-  SearchNavIcon, SettingsNavIcon, AdminNavIcon,
+  SearchNavIcon, SettingsNavIcon, AdminNavIcon, DnaNavIcon,
 } from '../../components/brand/icons';
 
 const NAV = [
@@ -173,6 +173,25 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
             )}
           </Link>
 
+          {user?.subscriptionTier === 'pro' && (
+            <Link
+              href="/dna"
+              title={collapsed ? 'DNA Matching' : undefined}
+              className="flex items-center gap-3 rounded-xl transition-colors group"
+              style={{ padding: collapsed ? '10px' : '9px 12px' }}
+            >
+              <DnaNavIcon
+                size={18} color="var(--text-muted)"
+                className="shrink-0 transition-colors group-hover:text-[var(--text-primary)]"
+              />
+              {!collapsed && (
+                <span className="text-sm font-medium" style={{ color: 'var(--text-muted)' }}>
+                  DNA Matching
+                </span>
+              )}
+            </Link>
+          )}
+
           {user?.isAdmin && (
             <Link
               href="/admin"
@@ -258,6 +277,18 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 function PageTitle({ pathname }: { pathname: string }) {
   const parts = pathname.split('/').filter(Boolean);
   const last  = parts[parts.length - 1] ?? 'Dashboard';
+
+  // Acronym exception — the generic Title Case pass below would render
+  // this as "Dna" otherwise.
+  if (last === 'dna') {
+    return (
+      <h1 className="font-display font-semibold text-base tracking-tight"
+        style={{ color: 'var(--text-primary)' }}>
+        DNA Matching
+      </h1>
+    );
+  }
+
   const title = last
     .replace(/-/g, ' ')
     .replace(/\b\w/g, c => c.toUpperCase());

@@ -12,7 +12,7 @@ import {
 //   3. Offer a single, clear next action
 
 interface EmptyStateProps {
-  variant: 'trees' | 'people' | 'media' | 'search' | 'notifications' | 'audit';
+  variant: 'trees' | 'people' | 'media' | 'search' | 'notifications' | 'audit' | 'dna';
   action?: { label: string; href?: string; onClick?: () => void };
 }
 
@@ -70,6 +70,24 @@ const CONTENT: Record<EmptyStateProps['variant'], {
     ),
     headline: 'No audit events yet',
     body: 'Admin actions, login events, and security-relevant changes will appear here as they occur.',
+  },
+  dna: {
+    illustration: (
+      <svg width={80} height={80} viewBox="0 0 80 80" fill="none">
+        <path
+          d="M28 8 C28 20, 52 20, 52 32 C52 44, 28 44, 28 56 C28 68, 52 68, 52 72"
+          stroke="var(--border-strong)" strokeWidth="3" strokeLinecap="round" fill="none" />
+        <path
+          d="M52 8 C52 20, 28 20, 28 32 C28 44, 52 44, 52 56 C52 68, 28 68, 28 72"
+          stroke="var(--border-strong)" strokeWidth="3" strokeLinecap="round" fill="none" />
+        <line x1="29" y1="15" x2="51" y2="15" stroke="var(--border-default)" strokeWidth="2.25" strokeLinecap="round" />
+        <line x1="28" y1="32" x2="52" y2="32" stroke="var(--border-default)" strokeWidth="2.25" strokeLinecap="round" />
+        <line x1="29" y1="49" x2="51" y2="49" stroke="var(--border-default)" strokeWidth="2.25" strokeLinecap="round" />
+        <line x1="28" y1="65" x2="52" y2="65" stroke="var(--border-default)" strokeWidth="2.25" strokeLinecap="round" />
+      </svg>
+    ),
+    headline: 'No DNA kits uploaded yet',
+    body: 'Upload a raw data export from AncestryDNA, 23andMe, MyHeritage, or FamilyTreeDNA to find genetic matches with other RootLink members.',
   },
 };
 

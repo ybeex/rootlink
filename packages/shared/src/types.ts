@@ -333,6 +333,40 @@ export interface CursorPaginatedResponse<T> {
   hasMore: boolean;
 }
 
+// ─── DNA Matching ──────────────────────────────────────────────────────────────
+
+export type DnaKitStatus = 'processing' | 'ready' | 'failed';
+export type DnaProvider = 'ancestrydna' | '23andme' | 'myheritage' | 'ftdna' | 'other';
+
+export interface DnaKit {
+  id: UUID;
+  uploadedBy: UUID;
+  personId: UUID | null;
+  treeId: UUID | null;
+  label: string;
+  provider: DnaProvider;
+  status: DnaKitStatus;
+  rawDataStorageKey: string;
+  snpCount: number | null;
+  sex: 'male' | 'female' | null;
+  processingError: string | null;
+  uploadedAt: ISODateString;
+  processedAt: ISODateString | null;
+  deletedAt: ISODateString | null;
+}
+
+export interface DnaMatch {
+  matchId: UUID;
+  otherKitId: UUID;
+  otherKitLabel: string;
+  otherKitOwnerId: UUID;
+  totalSharedCm: number;
+  largestSegmentCm: number;
+  segmentCount: number;
+  estimatedRelationship: string;
+  computedAt: ISODateString;
+}
+
 // ─── API Response wrappers ────────────────────────────────────────────────────
 
 export interface ApiSuccess<T> {
