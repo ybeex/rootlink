@@ -8,7 +8,7 @@ import {
   type UpdateTreeInput,
   type InviteMemberInput,
 } from '@rootlink/shared';
-import { authenticate, requireTreeRole } from '../middleware/auth.js';
+import { authenticate, requireTreeRole, requireTreeViewAccess } from '../middleware/auth.js';
 import { createAppError, formatZodError } from '../lib/errors.js';
 import { handleIdempotency } from '../lib/idempotency.js';
 
@@ -70,6 +70,25 @@ export async function treeRoutes(app: FastifyInstance) {
       return reply.send({
         success: true,
         data: tree,
+        requestId: request.id,
+        timestamp: new Date().toISOString(),
+      });
+    },
+  );
+
+  // ─── Timeline (§5.4) ──────────────────────────────────────────────────────
+
+  app.get<{ Params: { treeId: string }; Querystring: { shareToken?: string } }>(
+    '/:treeId/timeline',
+    { preHandler: [requireTreeViewAccess()] },
+    async (request, reply) => {
+      const timeline = await treeService.getTimeline(request.params.treeId, {
+        viewerRole: request.viewPermission?.role ?? null,
+        isShareTokenViewer: request.viewPermission?.viaShareToken ?? false,
+      });
+      return reply.send({
+        success: true,
+        data: timeline,
         requestId: request.id,
         timestamp: new Date().toISOString(),
       });

@@ -4,9 +4,44 @@ import { createRelationshipSchema } from '@rootlink/shared';
 import { requireTreeRole, requireTreeViewAccess } from '../middleware/auth.js';
 import { createAppError, formatZodError } from '../lib/errors.js';
 import { handleIdempotency } from '../lib/idempotency.js';
+import { z } from 'zod';
 
 export async function relationshipRoutes(app: FastifyInstance) {
   const svc = new RelationshipService();
+
+  // Shortest relationship path between two people in the tree ("how are we
+  // related?"). Read-only, so gated the same as the other GET endpoints in
+  // this file (requireTreeRole('viewer')/requireTreeViewAccess).
+  const pathQuerySchema = z.object({ from: z.string().uuid(), to: z.string().uuid() });
+  app.get<{ Params: { treeId: string }; Querystring: Record<string, string> }>(
+    '/path',
+    { preHandler: [requireTreeRole('viewer')] },
+    async (request, reply) => {
+      const parsed = pathQuerySchema.safeParse(request.query);
+      if (!parsed.success) {
+        throw createAppError('VALIDATION_ERROR', 'from and to person IDs are required', 400, {
+          fields: formatZodError(parsed.error),
+        });
+      }
+
+      const result = await svc.findPath(request.params.treeId, parsed.data.from, parsed.data.to);
+      if (!result) {
+        return reply.send({
+          success: true,
+          data: null,
+          requestId: request.id,
+          timestamp: new Date().toISOString(),
+        });
+      }
+
+      return reply.send({
+        success: true,
+        data: result,
+        requestId: request.id,
+        timestamp: new Date().toISOString(),
+      });
+    },
+  );
 
   // List relationships for a tree
   app.get<{ Params: { treeId: string }; Querystring: { shareToken?: string } }>(

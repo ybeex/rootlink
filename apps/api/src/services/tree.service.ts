@@ -1,8 +1,8 @@
 import { nanoid } from 'nanoid';
-import { getDb, trees, treeMembers, persons, users } from '@rootlink/db';
-import { eq, and, isNull, count } from 'drizzle-orm';
-import type { CreateTreeInput, UpdateTreeInput, InviteMemberInput } from '@rootlink/shared';
-import { SUBSCRIPTION_LIMITS, CACHE_TTL, WS_EVENTS } from '@rootlink/shared';
+import { getDb, trees, treeMembers, persons, users, vitalEvents } from '@rootlink/db';
+import { eq, and, isNull, count, asc } from 'drizzle-orm';
+import type { CreateTreeInput, UpdateTreeInput, InviteMemberInput, TreeRole } from '@rootlink/shared';
+import { SUBSCRIPTION_LIMITS, CACHE_TTL, WS_EVENTS, isPersonPrivacyRestricted, getDisplayName } from '@rootlink/shared';
 import { cacheGet, cacheSet, cacheDelPattern } from '../lib/redis.js';
 import { publishTreeEvent } from '../plugins/websocket.js';
 import { createAppError } from '../lib/errors.js';
@@ -329,5 +329,71 @@ export class TreeService {
       cacheDelPattern(`user_trees:${targetUserId}`),
       cacheDelPattern(`tree_perm:${targetUserId}:${treeId}`),
     ]);
+  }
+
+  // ─── Timeline (§5.4) ────────────────────────────────────────────────────────
+  //
+  // Every vital event in the tree, across every person, sorted
+  // chronologically — "aggregate vitalEvents across a family, sorted by
+  // date" per the continuation plan. vitalEvents carries treeId directly,
+  // so this is a single flat query rather than a join through every person
+  // in the tree individually.
+  //
+  // Privacy: events belonging to a privacy-restricted person are excluded
+  // entirely rather than partially redacted. A feed that mixes visible and
+  // "someone private" placeholder entries side-by-side is a worse
+  // experience than just not surfacing that person's events here at all,
+  // and avoids the harder problem of deciding how much of a redacted
+  // entry (date? place? just the event type?) is safe to show in
+  // isolation from the rest of that person's profile.
+  async getTimeline(
+    treeId: string,
+    options: { viewerRole?: TreeRole | null; isShareTokenViewer?: boolean } = {},
+  ) {
+    const { viewerRole = null, isShareTokenViewer = false } = options;
+    const { db } = getDb();
+
+    const rows = await db
+      .select({
+        eventId: vitalEvents.id,
+        type: vitalEvents.type,
+        dateYear: vitalEvents.dateYear,
+        dateMonth: vitalEvents.dateMonth,
+        dateDay: vitalEvents.dateDay,
+        dateCirca: vitalEvents.dateCirca,
+        placeDisplayName: vitalEvents.placeDisplayName,
+        description: vitalEvents.description,
+        personId: persons.id,
+        firstName: persons.firstName,
+        middleName: persons.middleName,
+        lastName: persons.lastName,
+        preferredName: persons.preferredName,
+        isLiving: persons.isLiving,
+        privacyLevel: persons.privacyLevel,
+      })
+      .from(vitalEvents)
+      .innerJoin(persons, eq(vitalEvents.personId, persons.id))
+      .where(and(eq(vitalEvents.treeId, treeId), isNull(persons.deletedAt)))
+      .orderBy(asc(vitalEvents.dateYear), asc(vitalEvents.dateMonth), asc(vitalEvents.dateDay));
+
+    return rows
+      .filter((r) => {
+        if (isPersonPrivacyRestricted({ privacyLevel: r.privacyLevel }, { role: viewerRole, isShareTokenViewer })) return false;
+        // Living persons' events are excluded from a share-token view of
+        // the timeline, same as redactLiving does for the person list —
+        // an anonymous link recipient shouldn't see a living relative's
+        // birthdate laid out on a public-facing feed.
+        if (isShareTokenViewer && r.isLiving) return false;
+        return true;
+      })
+      .map((r) => ({
+        eventId: r.eventId,
+        type: r.type,
+        date: r.dateYear ? { year: r.dateYear, month: r.dateMonth, day: r.dateDay, circa: r.dateCirca } : null,
+        place: r.placeDisplayName,
+        description: r.description,
+        personId: r.personId,
+        personDisplayName: getDisplayName(r),
+      }));
   }
 }

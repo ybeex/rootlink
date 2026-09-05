@@ -408,6 +408,31 @@ export interface MergePreview {
   mediaTagsToMove: number;
 }
 
+// ─── Relationship path finder ───────────────────────────────────────────────
+
+export interface RelationshipPathStep {
+  personId: UUID;
+  displayName: string;
+}
+
+export interface RelationshipPathResult {
+  steps: RelationshipPathStep[];
+  hopDescriptions: string[];
+  relationshipLabel: string | null;
+}
+
+// ─── Timeline ───────────────────────────────────────────────────────────────
+
+export interface TimelineEntry {
+  eventId: UUID;
+  type: string;
+  date: { year: number; month: number | null; day: number | null; circa: boolean } | null;
+  place: string | null;
+  description: string | null;
+  personId: UUID;
+  personDisplayName: string;
+}
+
 // ─── API Response wrappers ────────────────────────────────────────────────────
 
 export interface ApiSuccess<T> {
