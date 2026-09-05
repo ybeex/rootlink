@@ -6,7 +6,7 @@ import { useQuery } from '@tanstack/react-query';
 import dynamic from 'next/dynamic';
 import {
   Plus, Layers, ZoomIn, ZoomOut, Maximize2,
-  Users, ChevronLeft, Share2, Settings2,
+  Users, ChevronLeft, Share2, Settings2, History,
 } from 'lucide-react';
 import { api } from '../../../../lib/api-client';
 import type { PedigreeTreeHandle } from '../../../../components/tree/PedigreeTree';
@@ -133,6 +133,11 @@ export default function TreePage() {
             className="flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium transition-colors hover:bg-[var(--bg-muted)]"
             style={{ color: 'var(--text-muted)' }}>
             <Share2 size={13} /> Share
+          </button>
+          <button onClick={() => router.push(`/trees/${treeId}/timeline`)}
+            className="flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium transition-colors hover:bg-[var(--bg-muted)]"
+            style={{ color: 'var(--text-muted)' }}>
+            <History size={13} /> Timeline
           </button>
           <button onClick={() => router.push(`/trees/${treeId}/settings`)}
             className="flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium transition-colors hover:bg-[var(--bg-muted)]"
