@@ -2,15 +2,56 @@
 > The bottom-of-file git log reflects only the session that *wrote* this plan — run
 > `git log --oneline` in the repo for the true current state; the newest commits are the
 > `dna.routes.ts`, `ErrorCode` type fix, DNA error-code registration, and DNA frontend work
-> (kit list page, match list page, sidebar nav entry, disclosure panel). The rest of this
-> document (§3 API Access, §4 Offline/PWA, §5 remaining PRD gaps) is unchanged and still
-> accurately describes what's left. Section 2 is left in place below as a historical record
-> of what was planned and built, not as an open task list.
+> (kit list page, match list page, sidebar nav entry, disclosure panel). Section 2 is left
+> in place below as a historical record of what was planned and built, not as an open task
+> list.
 >
 > **One deliberate scope-narrowing versus the original §2.2 spec:** the kit-upload UI does
 > not expose the `personId`/`treeId` linking fields that `createDnaUploadUrl` accepts —
 > kits upload unlinked to any tree/person for now. Linking a kit to a specific person in a
 > tree is real, not-yet-built scope, not a bug — the API already accepts it.
+>
+> **Update (still later session): §3, §4, and all five §5 items are now also built.**
+> Everything in this document is now historical record, not an open task list. Highlights
+> and honest gaps from that pass, in case anything needs re-verifying:
+> - **§3 API Access** — schema, `authenticateApiKey`/`requireApiKeyRateLimit` middleware,
+>   `/v1/public/{trees,persons}` (read-only), key management UI, `/docs/api`. Found that
+>   the global `@fastify/rate-limit` plugin can't key by authenticated user or API key at
+>   all (its `onRequest` hook runs before any `preHandler`, including auth) — built a
+>   standalone Redis-based limiter for API keys instead of fighting that; the plugin's
+>   existing per-user branch is still effectively dead code, untouched, out of scope.
+> - **§4 Offline/PWA** — hand-rolled service worker, offline READING only (no write-queue,
+>   disclosed deliberately), gated on `canOfflineAccess`. **Not verified in a real
+>   browser** — no browser available in this sandbox. Test install/update flows and the
+>   offline fallback before treating it as production-ready.
+> - **§5.1/§5.2** — GEDCOM upload now requires an explicit acknowledgment checkbox;
+>   built a real duplicate-detection heuristic + merge wizard (relationships/events/media
+>   tags/hints all get re-pointed, kept record's blank fields filled in, merged-away
+>   record soft-deleted). Wired into both manual person creation and GEDCOM import.
+> - **§5.3** — relationship path finder classifies pure blood-relationship paths
+>   (parent/sibling/aunt-uncle/nth-cousin-once-removed) via the standard degree-of-
+>   relationship formula; anything crossing a marriage/partner edge falls back to an
+>   honest hop-by-hop description rather than forcing a label that might be wrong.
+> - **§5.4** — tree-wide timeline, single flat query (`vitalEvents` carries `treeId`
+>   directly), privacy-restricted persons' events excluded entirely rather than
+>   partially redacted.
+> - **§5.5** — turned out narrower than this doc originally described: the media grid's
+>   non-photo fallback (type icon + filename) already existed. The actual gap was the
+>   lightbox modal, which rendered nothing at all for non-photo types. Fixed with real
+>   native `<video>`/`<audio>` playback (no thumbnail needed — the raw file already
+>   streams) and an honest icon-plus-download fallback for documents.
+>
+> **Bugs found and fixed along the way** (none of these were the task at hand — found
+> while touching adjacent code, fixed alongside it rather than left for later):
+> - `gedcom.worker.ts` was overwriting `trees.personCount` to the imported count instead
+>   of incrementing it — would silently corrupt tier-limit enforcement on any tree that
+>   already had people before a GEDCOM (re-)import.
+> - `MEDIA_TYPE_ICONS.photo` in `media/page.tsx` referenced the bare `Image` identifier,
+>   which isn't imported in that file (it's imported aliased as `ImageIcon`) — it was
+>   silently resolving to the browser's global `window.Image` (a DOM constructor, not a
+>   renderable React component) instead of the intended icon.
+> - An inverted aunt/uncle-vs-niece/nephew condition in the relationship-label classifier,
+>   caught and fixed during this same session before it was ever committed.
 
 # RootLink — Build Continuation Plan
 
