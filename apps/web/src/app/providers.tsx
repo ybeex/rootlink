@@ -6,6 +6,7 @@ import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import { Toaster } from 'sonner';
 import { useState } from 'react';
 import { ApiClientError } from '../lib/api-client';
+import { ServiceWorkerRegistration } from '../components/ServiceWorkerRegistration';
 
 export function Providers({ children }: { children: React.ReactNode }) {
   const [queryClient] = useState(
@@ -38,6 +39,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
         storageKey="rootlink-theme"
       >
         {children}
+        <ServiceWorkerRegistration />
         <Toaster
           position="bottom-right"
           toastOptions={{

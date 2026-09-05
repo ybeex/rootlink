@@ -12,6 +12,7 @@ import { PageTransition } from '../../components/layout/PageTransition';
 import { useQuery } from '@tanstack/react-query';
 import type { User } from '@rootlink/shared';
 import { RootLinkIcon } from '../../components/brand/Logo';
+import { OfflineBanner } from '../../components/OfflineBanner';
 import {
   TreeNavIcon, PeopleNavIcon, MediaNavIcon,
   SearchNavIcon, SettingsNavIcon, AdminNavIcon, DnaNavIcon,
@@ -254,6 +255,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 
       {/* ── Main content ─────────────────────────────────────────────────── */}
       <div className="flex flex-1 flex-col overflow-hidden">
+        <OfflineBanner />
         {/* Top bar */}
         <header
           className="flex h-[60px] shrink-0 items-center justify-between border-b px-6"
