@@ -4,10 +4,10 @@ import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
-import { Loader2, Shield, CreditCard, Trash2, Check } from 'lucide-react';
+import { Loader2, Shield, CreditCard, Trash2, Check, Key, Copy, X } from 'lucide-react';
 import { api, ApiClientError } from '../../../lib/api-client';
 import { useAuthStore } from '../../../store/auth.store';
-import type { User } from '@rootlink/shared';
+import type { User, ApiKeySummary, CreatedApiKey } from '@rootlink/shared';
 import { SUBSCRIPTION_LIMITS } from '@rootlink/shared';
 import { useRouter } from 'next/navigation';
 
@@ -51,7 +51,12 @@ export default function SettingsPage() {
         <div className="flex-1">
           {active === 'profile'      && <ProfileSection />}
           {active === 'security'     && <SecuritySection />}
-          {active === 'subscription' && <SubscriptionSection />}
+          {active === 'subscription' && (
+            <div className="space-y-6">
+              <SubscriptionSection />
+              <ApiKeysSection />
+            </div>
+          )}
           {active === 'danger'       && <DangerSection />}
         </div>
       </div>
@@ -327,6 +332,150 @@ function SubscriptionSection() {
           </div>
         ))}
       </div>
+    </SettingsCard>
+  );
+}
+
+// ── API Keys (Pro tier "API Access") ──────────────────────────────────────
+function ApiKeysSection() {
+  const queryClient = useQueryClient();
+  const { data: user } = useQuery({ queryKey: ['me'], queryFn: () => api.get<User>('/v1/users/me') });
+  const [newLabel, setNewLabel] = useState('');
+  // Held only in local state, only until the user dismisses the panel — this
+  // is the one and only time the plaintext key is ever available to show.
+  const [revealedKey, setRevealedKey] = useState<CreatedApiKey | null>(null);
+
+  const { data: keys } = useQuery({
+    queryKey: ['apiKeys'],
+    queryFn:  () => api.get<ApiKeySummary[]>('/v1/api-keys'),
+    enabled:  user?.subscriptionTier === 'pro',
+  });
+
+  const createMutation = useMutation({
+    mutationFn: (label: string) => api.post<CreatedApiKey>('/v1/api-keys', { label }),
+    onSuccess: (key) => {
+      setRevealedKey(key);
+      setNewLabel('');
+      void queryClient.invalidateQueries({ queryKey: ['apiKeys'] });
+    },
+    onError: (err) => {
+      toast.error(err instanceof ApiClientError ? err.message : 'Could not create API key.');
+    },
+  });
+
+  const revokeMutation = useMutation({
+    mutationFn: (keyId: string) => api.delete(`/v1/api-keys/${keyId}`),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ['apiKeys'] });
+      toast.success('Key revoked.');
+    },
+    onError: (err) => {
+      toast.error(err instanceof ApiClientError ? err.message : 'Could not revoke key.');
+    },
+  });
+
+  if (!user) return null;
+
+  if (user.subscriptionTier !== 'pro') {
+    return (
+      <SettingsCard title="API Access" description="Read-only API access for building your own tools against your trees.">
+        <p className="text-sm" style={{ color: 'var(--text-muted)' }}>
+          API access is available on the Pro plan.
+        </p>
+      </SettingsCard>
+    );
+  }
+
+  const activeKeys = (keys ?? []).filter((k) => !k.revokedAt);
+
+  return (
+    <SettingsCard title="API Access" description="Generate keys for read-only access to your trees.">
+      <a href="/docs/api" target="_blank" rel="noopener noreferrer"
+        className="mb-5 -mt-3 inline-block text-xs font-medium underline"
+        style={{ color: 'var(--accent-primary)' }}>
+        View API reference →
+      </a>
+      {revealedKey && (
+        <div className="mb-5 rounded-xl p-4" style={{ background: 'var(--accent-ember-soft)' }}>
+          <div className="mb-2 flex items-center justify-between">
+            <p className="text-xs font-semibold" style={{ color: 'var(--accent-ember)' }}>
+              Copy this key now — it won't be shown again
+            </p>
+            <button onClick={() => setRevealedKey(null)} aria-label="Dismiss">
+              <X size={14} style={{ color: 'var(--accent-ember)' }} />
+            </button>
+          </div>
+          <div className="flex items-center gap-2 rounded-lg px-3 py-2" style={{ background: 'var(--bg-surface)' }}>
+            <code className="flex-1 overflow-x-auto whitespace-nowrap text-xs" style={{ color: 'var(--text-primary)' }}>
+              {revealedKey.plaintextKey}
+            </code>
+            <button
+              onClick={() => {
+                void navigator.clipboard.writeText(revealedKey.plaintextKey);
+                toast.success('Copied to clipboard.');
+              }}
+              className="shrink-0 rounded-md p-1.5 transition-colors hover:bg-[var(--bg-subtle)]"
+              aria-label="Copy key"
+            >
+              <Copy size={13} style={{ color: 'var(--text-muted)' }} />
+            </button>
+          </div>
+        </div>
+      )}
+
+      <div className="mb-5 flex gap-2">
+        <input
+          value={newLabel}
+          onChange={(e) => setNewLabel(e.target.value)}
+          placeholder='Key label — e.g. "My export script"'
+          className="flex-1 rounded-xl px-3.5 py-2.5 text-sm outline-none"
+          style={{ background: 'var(--bg-subtle)', border: '1px solid var(--border-default)', color: 'var(--text-primary)' }}
+        />
+        <button
+          onClick={() => newLabel.trim() && createMutation.mutate(newLabel.trim())}
+          disabled={createMutation.isPending || !newLabel.trim()}
+          className="shrink-0 rounded-xl px-4 py-2.5 text-sm font-medium text-white disabled:opacity-60"
+          style={{ background: 'var(--accent-primary)' }}
+        >
+          {createMutation.isPending ? 'Generating…' : 'Generate key'}
+        </button>
+      </div>
+
+      {activeKeys.length === 0 ? (
+        <p className="py-6 text-center text-sm" style={{ color: 'var(--text-faint)' }}>
+          No active API keys yet.
+        </p>
+      ) : (
+        <div className="space-y-2">
+          {activeKeys.map((k) => (
+            <div key={k.id}
+              className="flex items-center justify-between gap-3 rounded-xl p-3"
+              style={{ border: '1px solid var(--border-default)' }}
+            >
+              <div className="flex items-center gap-2.5 min-w-0">
+                <Key size={14} className="shrink-0" style={{ color: 'var(--text-faint)' }} />
+                <div className="min-w-0">
+                  <p className="truncate text-sm font-medium" style={{ color: 'var(--text-primary)' }}>{k.label}</p>
+                  <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
+                    <code>{k.keyPrefix}…</code>
+                    {k.lastUsedAt
+                      ? ` · Last used ${new Date(k.lastUsedAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}`
+                      : ' · Never used'}
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => revokeMutation.mutate(k.id)}
+                disabled={revokeMutation.isPending}
+                className="shrink-0 text-xs font-medium underline"
+                style={{ color: '#e33209' }}
+              >
+                Revoke
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
     </SettingsCard>
   );
 }

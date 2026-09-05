@@ -367,6 +367,28 @@ export interface DnaMatch {
   computedAt: ISODateString;
 }
 
+// ─── API Access (Pro tier) ─────────────────────────────────────────────────────
+
+export interface ApiKeySummary {
+  id: UUID;
+  label: string;
+  keyPrefix: string;
+  scopes: string[];
+  lastUsedAt: ISODateString | null;
+  createdAt: ISODateString;
+  revokedAt: ISODateString | null;
+}
+
+export interface CreatedApiKey {
+  id: UUID;
+  label: string;
+  keyPrefix: string;
+  scopes: string[];
+  createdAt: ISODateString;
+  /** Only ever present in the create response — never returned again. */
+  plaintextKey: string;
+}
+
 // ─── API Response wrappers ────────────────────────────────────────────────────
 
 export interface ApiSuccess<T> {
