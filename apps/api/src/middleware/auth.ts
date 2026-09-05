@@ -2,9 +2,10 @@ import type { FastifyRequest, FastifyReply } from 'fastify';
 import type { TreeRole } from '@rootlink/shared';
 import { getDb, treeMembers, trees, users } from '@rootlink/db';
 import { eq, and, isNull } from 'drizzle-orm';
-import { cacheGet, cacheSet } from '../lib/redis.js';
+import { cacheGet, cacheSet, checkFixedWindowRateLimit } from '../lib/redis.js';
 import { CACHE_TTL } from '@rootlink/shared';
 import { createAppError } from '../lib/errors.js';
+import { verifyApiKey } from '../services/apikey.service.js';
 
 // ─── JWT Payload ──────────────────────────────────────────────────────────────
 
@@ -35,6 +36,84 @@ export async function authenticate(
     await request.jwtVerify();
   } catch {
     throw createAppError('TOKEN_INVALID', 'Invalid or expired access token', 401);
+  }
+}
+
+// ─── API key authentication (Pro tier "API Access" feature) ───────────────────
+//
+// A distinct auth path from JWT-based authenticate() above, not a
+// replacement for it — used only by the /v1/public/* route namespace.
+// Attaches request.apiKeyAuth rather than overloading request.user: JwtPayload
+// carries JWT-specific fields (iat/exp/iss) an API key genuinely doesn't have,
+// so route logic that needs "which user is this request acting as" should
+// read request.apiKeyAuth.userId here, not request.user.sub.
+
+export interface ApiKeyAuth {
+  apiKeyId: string;
+  userId: string;
+  scopes: string[];
+}
+
+declare module 'fastify' {
+  interface FastifyRequest {
+    apiKeyAuth?: ApiKeyAuth;
+  }
+}
+
+export async function authenticateApiKey(
+  request: FastifyRequest,
+  _reply: FastifyReply,
+): Promise<void> {
+  const header = request.headers.authorization;
+  if (!header?.startsWith('Bearer ')) {
+    throw createAppError('TOKEN_INVALID', 'Missing or malformed Authorization header', 401);
+  }
+
+  const rawKey = header.slice('Bearer '.length);
+  const verified = await verifyApiKey(rawKey);
+  if (!verified) {
+    throw createAppError('TOKEN_INVALID', 'Invalid or revoked API key', 401);
+  }
+
+  request.apiKeyAuth = verified;
+}
+
+const API_KEY_RATE_LIMIT = 60; // requests
+const API_KEY_RATE_WINDOW_SECONDS = 60; // per minute
+
+/**
+ * Must run AFTER authenticateApiKey in the preHandler chain — needs
+ * request.apiKeyAuth to already be set. See the comment on
+ * checkFixedWindowRateLimit in lib/redis.ts for why this is a standalone
+ * preHandler rather than routed through the global @fastify/rate-limit plugin.
+ */
+export async function requireApiKeyRateLimit(
+  request: FastifyRequest,
+  reply: FastifyReply,
+): Promise<void> {
+  const apiKeyId = request.apiKeyAuth?.apiKeyId;
+  if (!apiKeyId) {
+    // Should be unreachable if route ordering is correct; fail closed rather
+    // than silently skip rate limiting.
+    throw createAppError('TOKEN_INVALID', 'API key not authenticated', 401);
+  }
+
+  const result = await checkFixedWindowRateLimit(
+    `rl:apikey:${apiKeyId}`,
+    API_KEY_RATE_LIMIT,
+    API_KEY_RATE_WINDOW_SECONDS,
+  );
+
+  reply.header('x-ratelimit-limit', result.limit);
+  reply.header('x-ratelimit-remaining', result.remaining);
+  reply.header('x-ratelimit-reset', result.resetAt);
+
+  if (!result.allowed) {
+    throw createAppError(
+      'API_KEY_RATE_LIMIT',
+      `Rate limit exceeded: ${API_KEY_RATE_LIMIT} requests per minute per API key.`,
+      429,
+    );
   }
 }
 

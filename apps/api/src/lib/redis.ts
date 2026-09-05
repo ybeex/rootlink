@@ -73,6 +73,50 @@ export async function cacheDelPattern(pattern: string): Promise<void> {
   }
 }
 
+// ─── Fixed-window rate limiting (for API keys) ─────────────────────────────────
+//
+// Deliberately separate from @fastify/rate-limit's global plugin (see
+// plugins/index.ts) rather than threaded through it: that plugin hooks into
+// Fastify's `onRequest` phase, which runs before any route's `preHandler`
+// chain — including authenticateApiKey() — so a key-scoped limiter can't be
+// expressed as a `keyGenerator` there without the key having already been
+// authenticated, which hasn't happened yet at that point in the lifecycle.
+// A self-contained INCR+EXPIRE fixed-window counter, checked explicitly as
+// its own preHandler *after* authenticateApiKey, sidesteps that ordering
+// problem entirely and is easy to reason about without relying on plugin
+// internals.
+export interface RateLimitResult {
+  allowed: boolean;
+  limit: number;
+  remaining: number;
+  resetAt: number; // unix seconds
+}
+
+export async function checkFixedWindowRateLimit(
+  key: string,
+  limit: number,
+  windowSeconds: number,
+): Promise<RateLimitResult> {
+  const redis = getRedis();
+  const bucket = Math.floor(Date.now() / 1000 / windowSeconds);
+  const redisKey = `${key}:${bucket}`;
+  const resetAt = (bucket + 1) * windowSeconds;
+
+  const count = await redis.incr(redisKey);
+  if (count === 1) {
+    // Only the request that created the bucket sets its expiry — avoids
+    // resetting the TTL on every request in the window.
+    await redis.expire(redisKey, windowSeconds);
+  }
+
+  return {
+    allowed: count <= limit,
+    limit,
+    remaining: Math.max(0, limit - count),
+    resetAt,
+  };
+}
+
 // ─── Distributed lock (for idempotent ops) ────────────────────────────────────
 
 export async function acquireLock(

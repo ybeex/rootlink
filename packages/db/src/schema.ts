@@ -549,6 +549,39 @@ export const dnaMatchSegments = pgTable(
   ],
 );
 
+// ─── API Keys (Pro tier) ────────────────────────────────────────────────────
+//
+// Same selector+hash pattern as refreshTokens (see the comment on that
+// table): the full key is only ever known to the client, at creation time.
+// keyPrefix stores the first 8 characters in plaintext purely so a user can
+// tell their keys apart in a list ("rl_live_a1b2c3d4…") without the server
+// being able to reconstruct the full secret from stored data.
+//
+// scopes is deliberately a small jsonb string array rather than a modeled
+// permission system — there is exactly one scope ('read') at launch, per
+// the continuation plan's explicit "don't over-build" guidance. Widening
+// this later (e.g. adding 'write') doesn't require a schema change, just
+// validating a new string value.
+export const apiKeys = pgTable(
+  'api_keys',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    userId: uuid('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+    label: varchar('label', { length: 200 }).notNull(),
+    keyPrefix: varchar('key_prefix', { length: 16 }).notNull(),
+    keySelector: varchar('key_selector', { length: 32 }).notNull(),
+    keyHash: varchar('key_hash', { length: 255 }).notNull(),
+    scopes: jsonb('scopes').notNull().default(['read']),
+    lastUsedAt: timestamp('last_used_at', { withTimezone: true }),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+    revokedAt: timestamp('revoked_at', { withTimezone: true }),
+  },
+  (t) => [
+    uniqueIndex('api_keys_selector_unique').on(t.keySelector),
+    index('api_keys_user_idx').on(t.userId),
+  ],
+);
+
 // ─── Relations ────────────────────────────────────────────────────────────────
 
 export const usersRelations = relations(users, ({ many }) => ({
@@ -556,6 +589,7 @@ export const usersRelations = relations(users, ({ many }) => ({
   treeMembers: many(treeMembers),
   notifications: many(notifications),
   refreshTokens: many(refreshTokens),
+  apiKeys: many(apiKeys),
 }));
 
 export const treesRelations = relations(trees, ({ one, many }) => ({
@@ -609,3 +643,5 @@ export type NewDbDnaKit = typeof dnaKits.$inferInsert;
 export type DbDnaGenotype = typeof dnaGenotypes.$inferSelect;
 export type DbDnaMatch = typeof dnaMatches.$inferSelect;
 export type DbDnaMatchSegment = typeof dnaMatchSegments.$inferSelect;
+export type DbApiKey = typeof apiKeys.$inferSelect;
+export type NewDbApiKey = typeof apiKeys.$inferInsert;
