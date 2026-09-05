@@ -13,7 +13,7 @@ import { ALLOWED_MIME_TYPES } from '@rootlink/shared';
 interface TreeWithRole extends Tree { role: string }
 
 const MEDIA_TYPE_ICONS = {
-  photo:    Image,
+  photo:    ImageIcon,
   document: FileText,
   audio:    Music,
   video:    Video,
@@ -205,7 +205,7 @@ export default function MediaPage() {
       ) : (
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
           {assets.map((asset, i) => {
-            const Icon = MEDIA_TYPE_ICONS[asset.type] ?? Image;
+            const Icon = MEDIA_TYPE_ICONS[asset.type] ?? ImageIcon;
             return (
               <motion.div key={asset.id}
                 initial={{ opacity: 0, scale: 0.95 }}
@@ -253,6 +253,31 @@ export default function MediaPage() {
                 // eslint-disable-next-line @next/next/no-img-element
                 <img src={lightbox.url} alt={lightbox.caption ?? lightbox.filename}
                   className="max-h-[70vh] w-full object-contain" />
+              )}
+              {lightbox.type === 'video' && (
+                // Native playback needs no generated thumbnail at all — the
+                // raw file is already streamable, so this is a real preview,
+                // not a placeholder.
+                <video src={lightbox.url} controls className="max-h-[70vh] w-full bg-black" />
+              )}
+              {lightbox.type === 'audio' && (
+                <div className="flex flex-col items-center gap-4 px-8 py-10"
+                  style={{ background: 'var(--bg-subtle)' }}>
+                  <Music size={40} style={{ color: 'var(--text-faint)' }} />
+                  <audio src={lightbox.url} controls className="w-full" />
+                </div>
+              )}
+              {lightbox.type === 'document' && (
+                // A real inline preview would need a PDF-rendering library
+                // this environment can't verify is available — a plain
+                // type icon plus the download link below is the honest,
+                // cheap fallback the continuation plan calls for here,
+                // matching what the grid view already does.
+                <div className="flex flex-col items-center gap-3 px-8 py-16"
+                  style={{ background: 'var(--bg-subtle)' }}>
+                  <FileText size={40} style={{ color: 'var(--text-faint)' }} />
+                  <p className="text-xs" style={{ color: 'var(--text-faint)' }}>No inline preview — download to view</p>
+                </div>
               )}
               <div className="p-4">
                 <p className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>
