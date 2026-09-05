@@ -14,6 +14,8 @@ import { handleIdempotency } from '../lib/idempotency.js';
 import { getDb, editHistory } from '@rootlink/db';
 import { eq, and, desc } from 'drizzle-orm';
 import { aiBioQueue } from '../workers/queues.js';
+import { getMergePreview, mergePersons } from '../services/duplicate.service.js';
+import { z } from 'zod';
 
 export async function personRoutes(app: FastifyInstance) {
   const personService = new PersonService();
@@ -259,6 +261,67 @@ export async function personRoutes(app: FastifyInstance) {
       return reply.status(202).send({
         success: true,
         data: { message: 'Biography generation queued. You will be notified when ready.' },
+        requestId: request.id,
+        timestamp: new Date().toISOString(),
+      });
+    },
+  );
+
+  // ── Merge: preview ──────────────────────────────────────────────────────────
+  //
+  // Read-only — computes what a merge WOULD move/fill without changing
+  // anything, so the frontend can show a confirmation summary before the
+  // user commits to it.
+  const mergeQuerySchema = z.object({ keep: z.string().uuid(), remove: z.string().uuid() });
+  app.get<{ Params: { treeId: string }; Querystring: Record<string, string> }>(
+    '/merge-preview',
+    { preHandler: [requireTreeRole('contributor')] },
+    async (request, reply) => {
+      const parsed = mergeQuerySchema.safeParse(request.query);
+      if (!parsed.success) {
+        throw createAppError('VALIDATION_ERROR', 'keep and remove person IDs are required', 400, {
+          fields: formatZodError(parsed.error),
+        });
+      }
+
+      const preview = await getMergePreview(request.params.treeId, parsed.data.keep, parsed.data.remove);
+      return reply.send({
+        success: true,
+        data: preview,
+        requestId: request.id,
+        timestamp: new Date().toISOString(),
+      });
+    },
+  );
+
+  // ── Merge: commit ─────────────────────────────────────────────────────────────
+  //
+  // Requires 'admin' rather than 'contributor' — a merge re-points every
+  // relationship, vital event, and media tag off one of the two records and
+  // soft-deletes it, a broader-reaching change than a normal single-person
+  // edit, so it gets the same bar as GEDCOM import (also 'admin').
+  const mergeBodySchema = z.object({ keepId: z.string().uuid(), removeId: z.string().uuid() });
+  app.post<{ Params: { treeId: string }; Body: unknown }>(
+    '/merge',
+    { preHandler: [requireTreeRole('admin')] },
+    async (request, reply) => {
+      const parsed = mergeBodySchema.safeParse(request.body);
+      if (!parsed.success) {
+        throw createAppError('VALIDATION_ERROR', 'keepId and removeId are required', 400, {
+          fields: formatZodError(parsed.error),
+        });
+      }
+
+      const result = await mergePersons(
+        request.params.treeId,
+        request.user.sub,
+        parsed.data.keepId,
+        parsed.data.removeId,
+      );
+
+      return reply.send({
+        success: true,
+        data: result,
         requestId: request.id,
         timestamp: new Date().toISOString(),
       });

@@ -2,8 +2,9 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Check, X as Reject, ExternalLink, Lightbulb, Loader2, Zap } from 'lucide-react';
+import { X, Check, X as Reject, ExternalLink, Lightbulb, Loader2, Zap, GitMerge } from 'lucide-react';
 import { toast } from 'sonner';
+import Link from 'next/link';
 import { api } from '../../lib/api-client';
 import type { ResearchHint } from '@rootlink/shared';
 
@@ -100,6 +101,7 @@ export function HintsPanel({ treeId, open, onClose }: HintsPanelProps) {
                   <HintCard
                     key={hint.id}
                     hint={hint}
+                    treeId={treeId}
                     onAccept={() => reviewMutation.mutate({ hintId: hint.id, status: 'accepted' })}
                     onReject={() => reviewMutation.mutate({ hintId: hint.id, status: 'rejected' })}
                     isUpdating={reviewMutation.isPending && reviewMutation.variables?.hintId === hint.id}
@@ -115,15 +117,17 @@ export function HintsPanel({ treeId, open, onClose }: HintsPanelProps) {
 }
 
 function HintCard({
-  hint, onAccept, onReject, isUpdating,
+  hint, treeId, onAccept, onReject, isUpdating,
 }: {
   hint:       ResearchHint;
+  treeId:     string;
   onAccept:   () => void;
   onReject:   () => void;
   isUpdating: boolean;
 }) {
   const confidencePct = Math.round(hint.confidence * 100);
   const confColor     = hint.confidence >= 0.7 ? '#4a7c59' : hint.confidence >= 0.4 ? '#c79a4a' : 'var(--text-muted)';
+  const isDuplicateHint = hint.provider === 'duplicate_detection';
 
   return (
     <div className="rounded-xl p-4 transition-all"
@@ -132,7 +136,7 @@ function HintCard({
       <div className="mb-2 flex items-center justify-between">
         <span className="rounded-full px-2 py-0.5 text-2xs font-medium"
           style={{ background: 'var(--bg-muted)', color: 'var(--text-muted)' }}>
-          {hint.provider}
+          {isDuplicateHint ? 'possible duplicate' : hint.provider}
         </span>
         <span className="text-xs font-medium" style={{ color: confColor }}>
           {confidencePct}% match
@@ -159,31 +163,57 @@ function HintCard({
       </div>
 
       {/* Actions */}
-      <div className="flex items-center gap-2">
-        <button
-          onClick={onAccept}
-          disabled={isUpdating}
-          className="flex flex-1 items-center justify-center gap-1.5 rounded-lg py-1.5 text-xs font-medium transition-colors"
-          style={{ background: 'rgba(74,124,89,0.12)', color: '#4a7c59' }}>
-          {isUpdating ? <Loader2 size={11} className="animate-spin" /> : <Check size={11} />}
-          Accept
-        </button>
-        <button
-          onClick={onReject}
-          disabled={isUpdating}
-          className="flex flex-1 items-center justify-center gap-1.5 rounded-lg py-1.5 text-xs font-medium transition-colors"
-          style={{ background: 'rgba(127,140,141,0.10)', color: 'var(--text-muted)' }}>
-          {isUpdating ? <Loader2 size={11} className="animate-spin" /> : <Reject size={11} />}
-          Dismiss
-        </button>
-        {hint.recordUrl && (
-          <a href={hint.recordUrl} target="_blank" rel="noopener noreferrer"
-            className="flex h-7 w-7 items-center justify-center rounded-lg transition-colors hover:bg-[var(--bg-muted)]"
-            style={{ color: 'var(--text-faint)' }}>
-            <ExternalLink size={11} />
-          </a>
-        )}
-      </div>
+      {isDuplicateHint ? (
+        // A duplicate hint's "accept" can't just PATCH status=accepted like
+        // a normal research hint — that would mark it reviewed with zero
+        // actual effect (nothing gets merged). It has to route through the
+        // merge preview/confirm flow instead; the hint itself only gets
+        // marked accepted once a merge actually completes (see the merge
+        // page, which the user reaches from here).
+        <div className="flex items-center gap-2">
+          <Link
+            href={`/trees/${treeId}/merge?keep=${hint.externalRecordId}&remove=${hint.personId}&hintId=${hint.id}`}
+            className="flex flex-1 items-center justify-center gap-1.5 rounded-lg py-1.5 text-xs font-medium transition-colors"
+            style={{ background: 'rgba(74,124,89,0.12)', color: '#4a7c59' }}>
+            <GitMerge size={11} />
+            Review merge
+          </Link>
+          <button
+            onClick={onReject}
+            disabled={isUpdating}
+            className="flex flex-1 items-center justify-center gap-1.5 rounded-lg py-1.5 text-xs font-medium transition-colors"
+            style={{ background: 'rgba(127,140,141,0.10)', color: 'var(--text-muted)' }}>
+            {isUpdating ? <Loader2 size={11} className="animate-spin" /> : <Reject size={11} />}
+            Not a duplicate
+          </button>
+        </div>
+      ) : (
+        <div className="flex items-center gap-2">
+          <button
+            onClick={onAccept}
+            disabled={isUpdating}
+            className="flex flex-1 items-center justify-center gap-1.5 rounded-lg py-1.5 text-xs font-medium transition-colors"
+            style={{ background: 'rgba(74,124,89,0.12)', color: '#4a7c59' }}>
+            {isUpdating ? <Loader2 size={11} className="animate-spin" /> : <Check size={11} />}
+            Accept
+          </button>
+          <button
+            onClick={onReject}
+            disabled={isUpdating}
+            className="flex flex-1 items-center justify-center gap-1.5 rounded-lg py-1.5 text-xs font-medium transition-colors"
+            style={{ background: 'rgba(127,140,141,0.10)', color: 'var(--text-muted)' }}>
+            {isUpdating ? <Loader2 size={11} className="animate-spin" /> : <Reject size={11} />}
+            Dismiss
+          </button>
+          {hint.recordUrl && (
+            <a href={hint.recordUrl} target="_blank" rel="noopener noreferrer"
+              className="flex h-7 w-7 items-center justify-center rounded-lg transition-colors hover:bg-[var(--bg-muted)]"
+              style={{ color: 'var(--text-faint)' }}>
+              <ExternalLink size={11} />
+            </a>
+          )}
+        </div>
+      )}
     </div>
   );
 }

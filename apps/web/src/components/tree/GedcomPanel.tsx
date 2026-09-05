@@ -20,6 +20,7 @@ export function GedcomPanel({ treeId, open, onClose }: GedcomPanelProps) {
   const queryClient  = useQueryClient();
   const [uploadState, setUploadState] = useState<UploadState>('idle');
   const [errorMsg, setErrorMsg]       = useState<string>('');
+  const [acknowledgedDuplicateRisk, setAcknowledgedDuplicateRisk] = useState(false);
 
   // Export
   const exportMutation = useMutation({
@@ -64,6 +65,7 @@ export function GedcomPanel({ treeId, open, onClose }: GedcomPanelProps) {
       await api.post(`/v1/trees/${treeId}/gedcom/import`, { storageKey });
 
       setUploadState('done');
+      setAcknowledgedDuplicateRisk(false); // require re-confirming for the next import, if any
       void queryClient.invalidateQueries({ queryKey: ['persons', treeId] });
       void queryClient.invalidateQueries({ queryKey: ['tree', treeId] });
       toast.success('GEDCOM import started. You will be notified when complete.');
@@ -82,7 +84,7 @@ export function GedcomPanel({ treeId, open, onClose }: GedcomPanelProps) {
     onDrop,
     accept: { 'text/plain': ['.ged', '.gedcom'], 'application/octet-stream': ['.ged', '.gedcom'] },
     maxFiles: 1,
-    disabled: uploadState === 'uploading' || uploadState === 'processing',
+    disabled: uploadState === 'uploading' || uploadState === 'processing' || !acknowledgedDuplicateRisk,
   });
 
   return (
@@ -156,14 +158,33 @@ export function GedcomPanel({ treeId, open, onClose }: GedcomPanelProps) {
                 </div>
                 <p className="mb-3 text-xs leading-relaxed" style={{ color: 'var(--text-muted)' }}>
                   Upload a .ged file from Ancestry, MyHeritage, FamilySearch, or any GEDCOM-compatible app.
-                  Existing persons will not be overwritten — duplicates are created.
                 </p>
+                <div className="mb-3 rounded-lg p-3 text-xs leading-relaxed"
+                  style={{ background: 'var(--accent-ember-soft)', color: 'var(--accent-ember)' }}>
+                  <strong>Existing persons are never matched or overwritten automatically</strong> — everyone
+                  in the file is imported as a new person, even if they already exist in this tree. After
+                  import, likely duplicates are flagged for you to review and merge under Research Hints —
+                  but review them before assuming the tree is clean.
+                </div>
+                <label className="mb-3 flex cursor-pointer items-start gap-2 text-xs leading-relaxed"
+                  style={{ color: 'var(--text-secondary)' }}>
+                  <input
+                    type="checkbox"
+                    checked={acknowledgedDuplicateRisk}
+                    onChange={(e) => setAcknowledgedDuplicateRisk(e.target.checked)}
+                    className="mt-0.5"
+                  />
+                  I understand this may create duplicate people and I&rsquo;ll review the flagged matches
+                  afterward.
+                </label>
 
                 {uploadState === 'idle' || uploadState === 'error' ? (
                   <div
                     {...getRootProps()}
-                    className="cursor-pointer rounded-xl border-2 border-dashed py-8 text-center transition-colors"
+                    className="rounded-xl border-2 border-dashed py-8 text-center transition-colors"
                     style={{
+                      cursor: acknowledgedDuplicateRisk ? 'pointer' : 'not-allowed',
+                      opacity: acknowledgedDuplicateRisk ? 1 : 0.5,
                       borderColor: isDragActive ? 'var(--accent-ember)' : 'var(--border-default)',
                       background:  isDragActive ? 'var(--accent-ember-soft)' : 'var(--bg-surface)',
                     }}>
@@ -171,7 +192,9 @@ export function GedcomPanel({ treeId, open, onClose }: GedcomPanelProps) {
                     <FileText size={24} className="mx-auto mb-2"
                       style={{ color: isDragActive ? 'var(--accent-ember)' : 'var(--text-faint)' }} />
                     <p className="text-sm" style={{ color: isDragActive ? 'var(--accent-ember)' : 'var(--text-muted)' }}>
-                      {isDragActive ? 'Drop .ged file here' : 'Drag & drop a .ged file, or click to browse'}
+                      {acknowledgedDuplicateRisk
+                        ? (isDragActive ? 'Drop .ged file here' : 'Drag & drop a .ged file, or click to browse')
+                        : 'Check the box above to enable upload'}
                     </p>
                     {uploadState === 'error' && (
                       <p className="mt-2 text-xs" style={{ color: '#e33209' }}>{errorMsg}</p>

@@ -389,6 +389,25 @@ export interface CreatedApiKey {
   plaintextKey: string;
 }
 
+// ─── Duplicate detection & merge ───────────────────────────────────────────────
+
+export interface DuplicateMatch {
+  personId: UUID;
+  displayName: string;
+  birthYear: number | null;
+  score: number;
+  reasons: string[];
+}
+
+export interface MergePreview {
+  keep: { id: UUID; displayName: string };
+  remove: { id: UUID; displayName: string };
+  fieldsFilledFromRemoved: string[];
+  relationshipsToMove: number;
+  eventsToMove: number;
+  mediaTagsToMove: number;
+}
+
 // ─── API Response wrappers ────────────────────────────────────────────────────
 
 export interface ApiSuccess<T> {

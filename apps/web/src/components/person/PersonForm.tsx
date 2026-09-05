@@ -9,7 +9,9 @@ import { toast } from 'sonner';
 
 import { createPersonSchema, type CreatePersonInput } from '@rootlink/shared';
 import { api, ApiClientError } from '../../lib/api-client';
-import type { Person } from '@rootlink/shared';
+import type { Person, DuplicateMatch } from '@rootlink/shared';
+import { useState } from 'react';
+import { AlertTriangle } from 'lucide-react';
 
 const EVENT_TYPES = [
   { value: 'birth',            label: 'Birth'           },
@@ -31,6 +33,10 @@ export function PersonForm({ treeId, existing }: PersonFormProps) {
   const router       = useRouter();
   const queryClient  = useQueryClient();
   const isEditing    = !!existing;
+  const [duplicateWarning, setDuplicateWarning] = useState<{
+    newPersonId: string;
+    matches: DuplicateMatch[];
+  } | null>(null);
 
   const form = useForm<CreatePersonInput>({
     resolver: zodResolver(createPersonSchema),
@@ -76,9 +82,11 @@ export function PersonForm({ treeId, existing }: PersonFormProps) {
       if (isEditing && existing) {
         return api.patch<Person>(`/v1/trees/${treeId}/persons/${existing.id}`, data);
       }
-      return api.post<Person>(`/v1/trees/${treeId}/persons`, data, {
-        idempotencyKey: crypto.randomUUID(),
-      });
+      return api.post<Person & { potentialDuplicates?: DuplicateMatch[] }>(
+        `/v1/trees/${treeId}/persons`,
+        data,
+        { idempotencyKey: crypto.randomUUID() },
+      );
     },
     onSuccess: (person) => {
       queryClient.invalidateQueries({ queryKey: ['persons', treeId] });
@@ -87,6 +95,17 @@ export function PersonForm({ treeId, existing }: PersonFormProps) {
         queryClient.invalidateQueries({ queryKey: ['person', treeId, existing.id] });
       }
       toast.success(isEditing ? 'Person updated.' : 'Person added to tree.');
+
+      // Non-blocking duplicate warning: the person is already created —
+      // this just pauses the redirect for a moment to let the user notice
+      // a likely-existing match before they navigate away and lose the
+      // context of just having entered this data. See duplicate.service.ts.
+      const duplicates = 'potentialDuplicates' in person ? person.potentialDuplicates : undefined;
+      if (!isEditing && duplicates && duplicates.length > 0) {
+        setDuplicateWarning({ newPersonId: person.id, matches: duplicates });
+        return;
+      }
+
       router.push(`/trees/${treeId}`);
     },
     onError: (err) => {
@@ -106,6 +125,56 @@ export function PersonForm({ treeId, existing }: PersonFormProps) {
   });
 
   const onSubmit = form.handleSubmit((data) => mutation.mutate(data));
+
+  if (duplicateWarning) {
+    return (
+      <div className="mx-auto max-w-2xl px-6 py-10">
+        <div className="rounded-2xl p-6" style={{ background: 'var(--accent-ember-soft)' }}>
+          <div className="mb-3 flex items-center gap-2">
+            <AlertTriangle size={18} style={{ color: 'var(--accent-ember)' }} />
+            <h1 className="text-lg font-semibold" style={{ color: 'var(--accent-ember)' }}>
+              This person was added — but check first
+            </h1>
+          </div>
+          <p className="mb-5 text-sm leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
+            Someone similar already exists in this tree. If it&rsquo;s the same person, view their
+            profile and merge the two instead of keeping a duplicate.
+          </p>
+
+          <div className="mb-5 space-y-2">
+            {duplicateWarning.matches.map((m) => (
+              <button
+                key={m.personId}
+                onClick={() => router.push(
+                  `/trees/${treeId}/merge?keep=${m.personId}&remove=${duplicateWarning.newPersonId}`,
+                )}
+                className="flex w-full items-center justify-between rounded-xl p-3 text-left transition-colors hover:bg-[var(--bg-surface)]"
+                style={{ background: 'var(--bg-surface)', border: '1px solid var(--border-default)' }}
+              >
+                <div>
+                  <p className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>{m.displayName}</p>
+                  <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
+                    {m.reasons.join(', ')} · {Math.round(m.score * 100)}% match
+                  </p>
+                </div>
+                <span className="text-xs font-medium underline" style={{ color: 'var(--accent-primary)' }}>
+                  Review merge
+                </span>
+              </button>
+            ))}
+          </div>
+
+          <button
+            onClick={() => router.push(`/trees/${treeId}`)}
+            className="text-xs font-medium underline"
+            style={{ color: 'var(--text-muted)' }}
+          >
+            No, they&rsquo;re different people — keep both
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <form onSubmit={onSubmit} className="mx-auto max-w-2xl px-6 py-10" noValidate>

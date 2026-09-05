@@ -16,6 +16,7 @@ import { cacheGet, cacheSet, cacheDelPattern } from '../lib/redis.js';
 import { aiHintQueue, dataQualityQueue } from '../workers/queues.js';
 import { publishTreeEvent } from '../plugins/websocket.js';
 import { createAppError } from '../lib/errors.js';
+import { findPotentialDuplicates } from './duplicate.service.js';
 import type { DbPerson, DbVitalEvent } from '@rootlink/db';
 
 export class PersonService {
@@ -341,7 +342,25 @@ export class PersonService {
     // WebSocket layer only ever synced presence, never actual tree data).
     void publishTreeEvent(treeId, WS_EVENTS.PERSON_CREATED, { personId: person.id }, userId).catch(() => undefined);
 
-    return { ...person, events: input.events };
+    // Duplicate-detection warning (non-blocking, best-effort): surfaced in
+    // the create response itself rather than as a separate pre-check
+    // endpoint the frontend must call before submitting — simpler, and
+    // still catches the case this is meant for (re-entering someone who
+    // already exists in the tree) before the user navigates away. A
+    // detection failure here must never fail person creation itself.
+    let potentialDuplicates: Awaited<ReturnType<typeof findPotentialDuplicates>> = [];
+    try {
+      const birthPlace = input.events.find((e) => e.type === 'birth')?.place?.displayName ?? null;
+      potentialDuplicates = await findPotentialDuplicates(
+        treeId,
+        { firstName: input.firstName, lastName: input.lastName, birthYear: birthEvent?.date?.year ?? null, birthPlace },
+        person.id,
+      );
+    } catch {
+      potentialDuplicates = [];
+    }
+
+    return { ...person, events: input.events, potentialDuplicates };
   }
 
   // ─── Update ────────────────────────────────────────────────────────────────

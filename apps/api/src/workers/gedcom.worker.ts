@@ -4,7 +4,8 @@ import {
 } from '@aws-sdk/client-s3';
 import { getRedis } from '../lib/redis.js';
 import { getDb, persons, vitalEvents, relationships, trees, notifications } from '@rootlink/db';
-import { eq, and } from 'drizzle-orm';
+import { eq, and, sql } from 'drizzle-orm';
+import { scanTreeForDuplicatesAfterImport } from '../services/duplicate.service.js';
 import { QUEUE_NAMES } from '@rootlink/shared';
 import { env } from '../config/env.js';
 import type { GedcomImportJob, GedcomExportJob } from './queues.js';
@@ -416,10 +417,30 @@ export function startGedcomWorkers() {
         }
       }
 
-      // Update tree person count
+      // Update tree person count. Increment, not overwrite — a flat
+      // `personCount: individuals.length` here would silently wipe out
+      // the correct total on any tree that already had persons before
+      // this import (e.g. a second GEDCOM import into an existing tree),
+      // corrupting the person-limit enforcement in person.service.ts's
+      // createPerson, which reads this same column.
       await db.update(trees)
-        .set({ personCount: individuals.length })
+        .set({ personCount: sql`${trees.personCount} + ${individuals.length}`, updatedAt: new Date() })
         .where(eq(trees.id, treeId));
+
+      // Duplicate-detection scan (see §5.1/§5.2 of the continuation plan):
+      // GEDCOM re-imports are the single most common source of duplicate
+      // person records, and there's no user present mid-import (this runs
+      // unattended in a worker) to show a synchronous confirmation to —
+      // so results are written as researchHints for review afterward via
+      // the existing Research Hints panel, rather than blocking the import.
+      try {
+        const importedIds = Array.from(gedcomToDbId.values());
+        const hintsCreated = await scanTreeForDuplicatesAfterImport(treeId, importedIds);
+        if (hintsCreated > 0) job.log(`Found ${hintsCreated} possible duplicate(s) — see Research Hints`);
+      } catch (err) {
+        // Never fail the import itself over a best-effort detection pass.
+        job.log(`Duplicate scan failed (non-fatal): ${err instanceof Error ? err.message : String(err)}`);
+      }
 
       // Notify user
       await db.insert(notifications).values({
