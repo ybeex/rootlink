@@ -6,7 +6,7 @@ import { useQuery } from '@tanstack/react-query';
 import dynamic from 'next/dynamic';
 import {
   Plus, Layers, ZoomIn, ZoomOut, Maximize2,
-  Users, ChevronLeft, Share2, Settings2, History,
+  Users, ChevronLeft, Share2, Settings2, History, Lightbulb,
 } from 'lucide-react';
 import { api } from '../../../../lib/api-client';
 import type { PedigreeTreeHandle } from '../../../../components/tree/PedigreeTree';
@@ -38,6 +38,11 @@ const PersonPanel = dynamic(
   { ssr: false }
 );
 
+const HintsPanel = dynamic(
+  () => import('../../../../components/tree/HintsPanel').then(m => ({ default: m.HintsPanel })),
+  { ssr: false }
+);
+
 export default function TreePage() {
   const params  = useParams<{ treeId: string }>();
   const router  = useRouter();
@@ -47,6 +52,7 @@ export default function TreePage() {
   const [viewMode, setViewMode]                          = useState<'pedigree' | 'fan' | 'descendants'>('pedigree');
   const treeRef = useRef<PedigreeTreeHandle>(null);
   const [showShare, setShowShare]                        = useState(false);
+  const [showHints, setShowHints]                        = useState(false);
 
   const { data: tree, isLoading: treeLoading } = useQuery({
     queryKey: ['tree', treeId],
@@ -139,6 +145,11 @@ export default function TreePage() {
             style={{ color: 'var(--text-muted)' }}>
             <History size={13} /> Timeline
           </button>
+          <button onClick={() => setShowHints(true)}
+            className="flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium transition-colors hover:bg-[var(--bg-muted)]"
+            style={{ color: 'var(--text-muted)' }}>
+            <Lightbulb size={13} /> Research Hints
+          </button>
           <button onClick={() => router.push(`/trees/${treeId}/settings`)}
             className="flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium transition-colors hover:bg-[var(--bg-muted)]"
             style={{ color: 'var(--text-muted)' }}>
@@ -222,6 +233,15 @@ export default function TreePage() {
         shareToken={(tree as Tree & { shareToken: string | null }).shareToken ?? null}
         open={showShare}
         onClose={() => setShowShare(false)}
+      />
+
+      {/* Research Hints panel — existed as a component before this fix but was
+          never actually mounted anywhere in the app; see
+          RootLink_Record_Matching_Design.md §2 for how this was found. */}
+      <HintsPanel
+        treeId={treeId}
+        open={showHints}
+        onClose={() => setShowHints(false)}
       />
     </div>
   );
