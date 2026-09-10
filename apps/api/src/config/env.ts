@@ -62,6 +62,28 @@ const envSchema = z.object({
   STRIPE_PRICE_ID_PLUS: z.string().optional(),
   STRIPE_PRICE_ID_PRO: z.string().optional(),
 
+  // FamilySearch integration (external record matching). Same
+  // optional-with-clear-error-at-point-of-use pattern as Stripe above —
+  // there is no registered FamilySearch developer app in this environment,
+  // and per-user OAuth (Authorization Code grant) is the only self-serve
+  // grant type FamilySearch offers; client-credentials requires FamilySearch
+  // to manually grant special permission (devsupport@familysearch.org), so
+  // this cannot be a single server-held credential the way Stripe's secret
+  // key is. See docs/RootLink_Record_Matching_Design.md.
+  FAMILYSEARCH_CLIENT_ID: z.string().optional(),
+  FAMILYSEARCH_CLIENT_SECRET: z.string().optional(),
+  FAMILYSEARCH_REDIRECT_URI: z.string().url().optional(),
+  FAMILYSEARCH_ENV: z.enum(['sandbox', 'beta', 'production']).default('sandbox'),
+
+  // Symmetric key (32 raw bytes, base64-encoded) used to encrypt third-party
+  // OAuth tokens at rest (e.g. a connected FamilySearch account's access/
+  // refresh tokens) — these must be reversible to actually use them, unlike
+  // the argon2-hashed secrets this codebase generates itself (refresh
+  // tokens, API keys), which only ever need to be verified, never read
+  // back. Optional for the same reason as the FamilySearch vars above: the
+  // feature that needs it degrades to a clear error, not a boot failure.
+  TOKEN_ENCRYPTION_KEY: z.string().optional(),
+
   // Rate limiting
   RATE_LIMIT_TRUST_PROXY: z.coerce.boolean().default(false),
 

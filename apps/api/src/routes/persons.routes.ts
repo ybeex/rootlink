@@ -11,11 +11,12 @@ import {
 import { requireTreeRole, requireTreeViewAccess } from '../middleware/auth.js';
 import { createAppError, formatZodError } from '../lib/errors.js';
 import { handleIdempotency } from '../lib/idempotency.js';
-import { getDb, editHistory } from '@rootlink/db';
-import { eq, and, desc } from 'drizzle-orm';
+import { getDb, editHistory, researchHints as researchHintsTable, persons, vitalEvents } from '@rootlink/db';
+import { eq, and, desc, isNull } from 'drizzle-orm';
 import { aiBioQueue } from '../workers/queues.js';
 import { getMergePreview, mergePersons } from '../services/duplicate.service.js';
 import { z } from 'zod';
+import { searchFamilySearch, assertNotLiving } from '../services/familysearch.service.js';
 
 export async function personRoutes(app: FastifyInstance) {
   const personService = new PersonService();
@@ -322,6 +323,80 @@ export async function personRoutes(app: FastifyInstance) {
       return reply.send({
         success: true,
         data: result,
+        requestId: request.id,
+        timestamp: new Date().toISOString(),
+      });
+    },
+  );
+
+  // ── FamilySearch search (§5 item 6 / RootLink_Record_Matching_Design.md) ────
+  //
+  // On-demand only — the user must explicitly press a button for this
+  // specific person, never a background/proactive scan. Never runs for a
+  // living person (assertNotLiving). Every result becomes a pending
+  // researchHints row for the user to review via the existing Hints
+  // UI/accept-reject flow — nothing here ever writes a fact onto the
+  // person directly (see the design doc §3.1).
+  app.post<{ Params: { treeId: string; personId: string } }>(
+    '/:personId/familysearch-search',
+    { preHandler: [requireTreeRole('contributor')] },
+    async (request, reply) => {
+      const { treeId, personId } = request.params;
+      await assertNotLiving(treeId, personId);
+
+      const { db } = getDb();
+      const [person] = await db
+        .select({ firstName: persons.firstName, lastName: persons.lastName })
+        .from(persons)
+        .where(and(eq(persons.id, personId), eq(persons.treeId, treeId), isNull(persons.deletedAt)))
+        .limit(1);
+      if (!person) throw createAppError('PERSON_NOT_FOUND', 'Person not found', 404);
+
+      const [birthEvent] = await db
+        .select({ dateYear: vitalEvents.dateYear, placeDisplayName: vitalEvents.placeDisplayName })
+        .from(vitalEvents)
+        .where(and(eq(vitalEvents.personId, personId), eq(vitalEvents.type, 'birth')))
+        .limit(1);
+      const [deathEvent] = await db
+        .select({ dateYear: vitalEvents.dateYear })
+        .from(vitalEvents)
+        .where(and(eq(vitalEvents.personId, personId), eq(vitalEvents.type, 'death')))
+        .limit(1);
+
+      const matches = await searchFamilySearch(request.user.sub, {
+        firstName: person.firstName,
+        lastName: person.lastName,
+        birthYear: birthEvent?.dateYear ?? null,
+        birthPlace: birthEvent?.placeDisplayName ?? null,
+        deathYear: deathEvent?.dateYear ?? null,
+      });
+
+      const createdHints = [];
+      for (const match of matches) {
+        try {
+          const [hint] = await db.insert(researchHintsTable).values({
+            personId,
+            treeId,
+            provider: 'familysearch',
+            externalRecordId: match.externalId,
+            title: `Possible FamilySearch match: ${match.displayName}`,
+            description: match.matchedFields.length > 0
+              ? `Matched on: ${match.matchedFields.join(', ')}.`
+              : 'FamilySearch returned this as a possible match — review the record for yourself before accepting.',
+            recordUrl: match.recordUrl,
+            confidence: match.confidence,
+            status: 'pending',
+          }).returning();
+          createdHints.push(hint);
+        } catch {
+          // Unique index on (personId, provider, externalRecordId) — this
+          // exact match was already surfaced by a previous search.
+        }
+      }
+
+      return reply.send({
+        success: true,
+        data: createdHints,
         requestId: request.id,
         timestamp: new Date().toISOString(),
       });

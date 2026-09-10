@@ -582,6 +582,35 @@ export const apiKeys = pgTable(
   ],
 );
 
+// ─── Connected External Accounts (FamilySearch OAuth, §5 item 6) ───────────
+//
+// One row per user per provider. FamilySearch's only self-serve, general-use
+// OAuth grant is Authorization Code — there is no server-held credential
+// that can search on every user's behalf, so each user connects their own
+// account individually, same as "Connect your Google account" elsewhere.
+// Tokens are stored via encryptToken()/decryptToken() (lib/crypto.ts) —
+// reversible, unlike the argon2-hashed secrets this project generates
+// itself (refresh tokens, API keys) — because they have to be handed back
+// to FamilySearch's API on every call, not just verified once.
+export const connectedAccounts = pgTable(
+  'connected_accounts',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    userId: uuid('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+    provider: varchar('provider', { length: 50 }).notNull(),
+    providerUserId: varchar('provider_user_id', { length: 200 }),
+    accessTokenEncrypted: text('access_token_encrypted').notNull(),
+    refreshTokenEncrypted: text('refresh_token_encrypted'),
+    expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),
+    connectedAt: timestamp('connected_at', { withTimezone: true }).notNull().defaultNow(),
+    revokedAt: timestamp('revoked_at', { withTimezone: true }),
+  },
+  (t) => [
+    uniqueIndex('connected_accounts_user_provider_unique').on(t.userId, t.provider),
+    index('connected_accounts_user_idx').on(t.userId),
+  ],
+);
+
 // ─── Relations ────────────────────────────────────────────────────────────────
 
 export const usersRelations = relations(users, ({ many }) => ({
@@ -590,6 +619,7 @@ export const usersRelations = relations(users, ({ many }) => ({
   notifications: many(notifications),
   refreshTokens: many(refreshTokens),
   apiKeys: many(apiKeys),
+  connectedAccounts: many(connectedAccounts),
 }));
 
 export const treesRelations = relations(trees, ({ one, many }) => ({
@@ -645,3 +675,5 @@ export type DbDnaMatch = typeof dnaMatches.$inferSelect;
 export type DbDnaMatchSegment = typeof dnaMatchSegments.$inferSelect;
 export type DbApiKey = typeof apiKeys.$inferSelect;
 export type NewDbApiKey = typeof apiKeys.$inferInsert;
+export type DbConnectedAccount = typeof connectedAccounts.$inferSelect;
+export type NewDbConnectedAccount = typeof connectedAccounts.$inferInsert;

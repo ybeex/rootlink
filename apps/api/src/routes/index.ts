@@ -12,6 +12,7 @@ import { adminRoutes } from './admin.routes.js';
 import { dnaRoutes } from './dna.routes.js';
 import { apiKeyRoutes } from './apikey.routes.js';
 import { publicApiRoutes } from './public.routes.js';
+import { integrationRoutes } from './integrations.routes.js';
 import { healthRoutes } from './health.routes.js';
 
 export async function registerRoutes(app: FastifyInstance) {
@@ -23,6 +24,7 @@ export async function registerRoutes(app: FastifyInstance) {
   await app.register(dnaRoutes,      { prefix: '/v1/dna' });
   await app.register(apiKeyRoutes,   { prefix: '/v1/api-keys' });
   await app.register(publicApiRoutes, { prefix: '/v1/public' });
+  await app.register(integrationRoutes, { prefix: '/v1/integrations' });
   await app.register(treeRoutes,    { prefix: '/v1/trees' });
   await app.register(personRoutes,       { prefix: '/v1/trees/:treeId/persons' });
   await app.register(relationshipRoutes, { prefix: '/v1/trees/:treeId/relationships' });
