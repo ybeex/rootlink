@@ -329,6 +329,64 @@ export async function searchFamilySearch(
   return matches;
 }
 
+export interface FamilySearchFact {
+  type: string; // e.g. 'Birth', 'Death' — the trailing segment of the GEDCOM X fact URI
+  year: number | null;
+  place: string | null;
+}
+
+/**
+ * Fetches the full current record for a specific matched FamilySearch
+ * person, fetched fresh at review time rather than persisted from the
+ * original search — a hint can sit pending for a while before a user
+ * reviews it, and re-fetching avoids importing stale facts if the
+ * FamilySearch record has since been edited by its collaborative editors.
+ */
+export async function getPersonRecordDetail(userId: string, externalId: string): Promise<{
+  displayName: string;
+  facts: FamilySearchFact[];
+}> {
+  const accessToken = await getValidAccessToken(userId);
+  const apiHost = API_HOSTS[env.FAMILYSEARCH_ENV];
+
+  const res = await fetch(`${apiHost}/platform/tree/persons/${encodeURIComponent(externalId)}`, {
+    headers: { Authorization: `Bearer ${accessToken}`, Accept: 'application/x-gedcomx-v1+json' },
+  });
+  if (res.status === 401) {
+    throw createAppError('VALIDATION_ERROR', 'FamilySearch rejected the access token. Reconnect your account in Settings.', 401);
+  }
+  if (!res.ok) {
+    throw createAppError('SERVICE_UNAVAILABLE', `Could not fetch FamilySearch record (${res.status}).`, 502);
+  }
+
+  const body = await res.json() as {
+    persons?: Array<{
+      names?: Array<{ nameForms?: Array<{ fullText?: string }> }>;
+      facts?: Array<{ type?: string; date?: { original?: string }; place?: { original?: string } }>;
+    }>;
+  };
+  const person = body.persons?.[0];
+
+  const facts: FamilySearchFact[] = (person?.facts ?? []).map((f) => {
+    const type = f.type?.split('/').pop() ?? 'Unknown';
+    // GEDCOM X dates are free-text ("original") by default rather than
+    // structured — extracting just a leading 4-digit year is a
+    // deliberately conservative parse rather than attempting to handle
+    // every date format GEDCOM X permits (partial, approximate, ranges).
+    const yearMatch = f.date?.original?.match(/\b(\d{4})\b/);
+    return {
+      type,
+      year: yearMatch ? Number(yearMatch[1]) : null,
+      place: f.place?.original ?? null,
+    };
+  });
+
+  return {
+    displayName: person?.names?.[0]?.nameForms?.[0]?.fullText ?? 'Unknown name',
+    facts,
+  };
+}
+
 /** Fails closed for living persons — their data should never be sent to a third party for a speculative search. */
 export async function assertNotLiving(treeId: string, personId: string): Promise<void> {
   const { db } = getDb();

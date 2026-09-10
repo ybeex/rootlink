@@ -4,6 +4,7 @@ import { cacheSet, cacheGet, getRedis } from '../lib/redis.js';
 import { env } from '../config/env.js';
 import {
   getAuthorizationUrl, generateOAuthState, connectAccount, isConnected, disconnectAccount,
+  getPersonRecordDetail,
 } from '../services/familysearch.service.js';
 
 const STATE_TTL_SECONDS = 600; // 10 minutes — long enough for a user to complete FamilySearch's login, short enough to bound a leaked/unused state value
@@ -83,4 +84,23 @@ export async function integrationRoutes(app: FastifyInstance) {
       timestamp: new Date().toISOString(),
     });
   });
+
+  // ── Fetch a matched record's current facts ──────────────────────────────────
+  //
+  // Called when a user opens the review-and-import modal for a
+  // familysearch-provider hint, not stored at search time — see
+  // getPersonRecordDetail's comment for why fetching fresh matters here.
+  app.get<{ Params: { externalId: string } }>(
+    '/familysearch/record/:externalId',
+    { preHandler: [authenticate] },
+    async (request, reply) => {
+      const detail = await getPersonRecordDetail(request.user.sub, request.params.externalId);
+      return reply.send({
+        success: true,
+        data: detail,
+        requestId: request.id,
+        timestamp: new Date().toISOString(),
+      });
+    },
+  );
 }

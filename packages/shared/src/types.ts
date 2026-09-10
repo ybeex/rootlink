@@ -433,6 +433,19 @@ export interface TimelineEntry {
   personDisplayName: string;
 }
 
+// ─── FamilySearch record matching ──────────────────────────────────────────
+
+export interface FamilySearchFact {
+  type: string;
+  year: number | null;
+  place: string | null;
+}
+
+export interface FamilySearchRecordDetail {
+  displayName: string;
+  facts: FamilySearchFact[];
+}
+
 // ─── API Response wrappers ────────────────────────────────────────────────────
 
 export interface ApiSuccess<T> {

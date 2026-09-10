@@ -5,11 +5,11 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
 import {
   ChevronLeft, Pencil, Calendar, MapPin, BookOpen,
-  Camera, Star, Clock, Lightbulb, Zap, Loader2, Route,
+  Camera, Star, Clock, Lightbulb, Zap, Loader2, Route, Search,
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { toast } from 'sonner';
-import { api } from '../../../../../../lib/api-client';
+import { api, ApiClientError } from '../../../../../../lib/api-client';
 import { formatPartialDate, getDisplayName } from '@rootlink/shared';
 import type { Person, VitalEvent } from '@rootlink/shared';
 import { RelationshipFinderModal } from '../../../../../../components/person/RelationshipFinderModal';
@@ -43,6 +43,26 @@ export default function PersonDetailPage({ params }: Props) {
         toast.error('AI biography generation requires a Plus or Pro subscription.');
       } else {
         toast.error('Failed to queue biography generation.');
+      }
+    },
+  });
+
+  const familySearchMutation = useMutation({
+    mutationFn: () =>
+      api.post<unknown[]>(`/v1/trees/${treeId}/persons/${personId}/familysearch-search`, {}),
+    onSuccess: (hints) => {
+      queryClient.invalidateQueries({ queryKey: ['hints', treeId] });
+      toast.success(
+        hints.length > 0
+          ? `Found ${hints.length} possible match${hints.length === 1 ? '' : 'es'} — check Research Hints to review.`
+          : 'No matches found on FamilySearch for this person.',
+      );
+    },
+    onError: (err: unknown) => {
+      if (err instanceof ApiClientError && err.message.toLowerCase().includes('connect')) {
+        toast.error('Connect your FamilySearch account in Settings first.');
+      } else {
+        toast.error(err instanceof ApiClientError ? err.message : 'FamilySearch search failed.');
       }
     },
   });
@@ -144,6 +164,18 @@ export default function PersonDetailPage({ params }: Props) {
             </div>
 
             <div className="flex shrink-0 items-center gap-2">
+              {!person.isLiving && (
+                <button
+                  onClick={() => familySearchMutation.mutate()}
+                  disabled={familySearchMutation.isPending}
+                  className="flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-medium disabled:opacity-60"
+                  style={{ border: '1px solid var(--border-default)', color: 'var(--text-secondary)' }}>
+                  {familySearchMutation.isPending
+                    ? <Loader2 size={13} className="animate-spin" />
+                    : <Search size={13} />}
+                  Search FamilySearch
+                </button>
+              )}
               <button
                 onClick={() => setShowRelFinder(true)}
                 className="flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-medium"

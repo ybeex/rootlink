@@ -1,15 +1,15 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
-import { Loader2, Shield, CreditCard, Trash2, Check, Key, Copy, X } from 'lucide-react';
+import { Loader2, Shield, CreditCard, Trash2, Check, Key, Copy, X, Link2, Unlink } from 'lucide-react';
 import { api, ApiClientError } from '../../../lib/api-client';
 import { useAuthStore } from '../../../store/auth.store';
 import type { User, ApiKeySummary, CreatedApiKey } from '@rootlink/shared';
 import { SUBSCRIPTION_LIMITS } from '@rootlink/shared';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 
 const SECTIONS = [
   { id: 'profile',      label: 'Profile',      icon: null    },
@@ -22,6 +22,19 @@ type SectionId = (typeof SECTIONS)[number]['id'];
 
 export default function SettingsPage() {
   const [active, setActive] = useState<SectionId>('profile');
+  const searchParams = useSearchParams();
+  const router = useRouter();
+
+  useEffect(() => {
+    const fsStatus = searchParams.get('familysearch');
+    if (fsStatus === 'connected') {
+      toast.success('FamilySearch account connected.');
+      router.replace('/settings');
+    } else if (fsStatus === 'error') {
+      toast.error('Could not connect your FamilySearch account. Please try again.');
+      router.replace('/settings');
+    }
+  }, [searchParams, router]);
 
   return (
     <div className="mx-auto max-w-3xl px-6 py-10">
@@ -49,7 +62,12 @@ export default function SettingsPage() {
 
         {/* Panel */}
         <div className="flex-1">
-          {active === 'profile'      && <ProfileSection />}
+          {active === 'profile'      && (
+            <div className="space-y-6">
+              <ProfileSection />
+              <ConnectedAccountsSection />
+            </div>
+          )}
           {active === 'security'     && <SecuritySection />}
           {active === 'subscription' && (
             <div className="space-y-6">
@@ -331,6 +349,69 @@ function SubscriptionSection() {
             </div>
           </div>
         ))}
+      </div>
+    </SettingsCard>
+  );
+}
+
+// ── Connected Accounts (FamilySearch) ─────────────────────────────────────
+function ConnectedAccountsSection() {
+  const queryClient = useQueryClient();
+
+  const { data, isLoading } = useQuery({
+    queryKey: ['familysearchStatus'],
+    queryFn: () => api.get<{ connected: boolean }>('/v1/integrations/familysearch/status'),
+  });
+
+  const connectMutation = useMutation({
+    mutationFn: () => api.get<{ url: string }>('/v1/integrations/familysearch/connect-url'),
+    onSuccess: (res) => {
+      window.location.href = res.url;
+    },
+    onError: (err) => {
+      toast.error(err instanceof ApiClientError ? err.message : 'Could not start the FamilySearch connection.');
+    },
+  });
+
+  const disconnectMutation = useMutation({
+    mutationFn: () => api.delete('/v1/integrations/familysearch'),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ['familysearchStatus'] });
+      toast.success('FamilySearch account disconnected.');
+    },
+    onError: (err) => {
+      toast.error(err instanceof ApiClientError ? err.message : 'Could not disconnect.');
+    },
+  });
+
+  return (
+    <SettingsCard title="Connected Accounts" description="Connect FamilySearch to search for possible matches for people in your trees.">
+      <div className="flex items-center justify-between gap-3 rounded-xl p-3.5"
+        style={{ border: '1px solid var(--border-default)' }}>
+        <div>
+          <p className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>FamilySearch</p>
+          <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
+            {isLoading ? 'Checking…' : data?.connected ? 'Connected' : 'Not connected'}
+          </p>
+        </div>
+        {data?.connected ? (
+          <button
+            onClick={() => disconnectMutation.mutate()}
+            disabled={disconnectMutation.isPending}
+            className="flex items-center gap-1.5 rounded-xl px-3.5 py-2 text-xs font-medium"
+            style={{ border: '1px solid var(--border-default)', color: 'var(--text-secondary)' }}>
+            <Unlink size={12} /> Disconnect
+          </button>
+        ) : (
+          <button
+            onClick={() => connectMutation.mutate()}
+            disabled={connectMutation.isPending || isLoading}
+            className="flex items-center gap-1.5 rounded-xl px-3.5 py-2 text-xs font-medium text-white disabled:opacity-60"
+            style={{ background: 'var(--accent-primary)' }}>
+            {connectMutation.isPending ? <Loader2 size={12} className="animate-spin" /> : <Link2 size={12} />}
+            Connect
+          </button>
+        )}
       </div>
     </SettingsCard>
   );

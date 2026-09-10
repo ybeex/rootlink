@@ -1,12 +1,14 @@
 'use client';
 
+import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Check, X as Reject, ExternalLink, Lightbulb, Loader2, Zap, GitMerge } from 'lucide-react';
+import { X, Check, X as Reject, ExternalLink, Lightbulb, Loader2, Zap, GitMerge, Search } from 'lucide-react';
 import { toast } from 'sonner';
 import Link from 'next/link';
 import { api } from '../../lib/api-client';
 import type { ResearchHint } from '@rootlink/shared';
+import { FamilySearchReviewModal } from '../person/FamilySearchReviewModal';
 
 interface HintsPanelProps {
   treeId: string;
@@ -16,6 +18,7 @@ interface HintsPanelProps {
 
 export function HintsPanel({ treeId, open, onClose }: HintsPanelProps) {
   const queryClient = useQueryClient();
+  const [reviewingHint, setReviewingHint] = useState<ResearchHint | null>(null);
 
   const { data, isLoading } = useQuery({
     queryKey: ['hints', treeId],
@@ -104,6 +107,7 @@ export function HintsPanel({ treeId, open, onClose }: HintsPanelProps) {
                     treeId={treeId}
                     onAccept={() => reviewMutation.mutate({ hintId: hint.id, status: 'accepted' })}
                     onReject={() => reviewMutation.mutate({ hintId: hint.id, status: 'rejected' })}
+                    onReview={() => setReviewingHint(hint)}
                     isUpdating={reviewMutation.isPending && reviewMutation.variables?.hintId === hint.id}
                   />
                 ))}
@@ -112,22 +116,33 @@ export function HintsPanel({ treeId, open, onClose }: HintsPanelProps) {
           </div>
         </motion.div>
       )}
+
+      {reviewingHint && (
+        <FamilySearchReviewModal
+          treeId={treeId}
+          personId={reviewingHint.personId}
+          hint={reviewingHint}
+          onClose={() => setReviewingHint(null)}
+        />
+      )}
     </AnimatePresence>
   );
 }
 
 function HintCard({
-  hint, treeId, onAccept, onReject, isUpdating,
+  hint, treeId, onAccept, onReject, onReview, isUpdating,
 }: {
   hint:       ResearchHint;
   treeId:     string;
   onAccept:   () => void;
   onReject:   () => void;
+  onReview:   () => void;
   isUpdating: boolean;
 }) {
   const confidencePct = Math.round(hint.confidence * 100);
   const confColor     = hint.confidence >= 0.7 ? '#4a7c59' : hint.confidence >= 0.4 ? '#c79a4a' : 'var(--text-muted)';
   const isDuplicateHint = hint.provider === 'duplicate_detection';
+  const isFamilySearchHint = hint.provider === 'familysearch';
 
   return (
     <div className="rounded-xl p-4 transition-all"
@@ -136,7 +151,7 @@ function HintCard({
       <div className="mb-2 flex items-center justify-between">
         <span className="rounded-full px-2 py-0.5 text-2xs font-medium"
           style={{ background: 'var(--bg-muted)', color: 'var(--text-muted)' }}>
-          {isDuplicateHint ? 'possible duplicate' : hint.provider}
+          {isDuplicateHint ? 'possible duplicate' : isFamilySearchHint ? 'FamilySearch' : hint.provider}
         </span>
         <span className="text-xs font-medium" style={{ color: confColor }}>
           {confidencePct}% match
@@ -185,6 +200,29 @@ function HintCard({
             style={{ background: 'rgba(127,140,141,0.10)', color: 'var(--text-muted)' }}>
             {isUpdating ? <Loader2 size={11} className="animate-spin" /> : <Reject size={11} />}
             Not a duplicate
+          </button>
+        </div>
+      ) : isFamilySearchHint ? (
+        // Opens the field-by-field review modal instead of a plain
+        // accept/reject — accepting a FamilySearch hint always means
+        // choosing which specific facts to import, never a bulk copy. The
+        // hint is marked accepted by that modal once an import (or an
+        // explicit "mark as reviewed" with nothing selected) completes.
+        <div className="flex items-center gap-2">
+          <button
+            onClick={onReview}
+            className="flex flex-1 items-center justify-center gap-1.5 rounded-lg py-1.5 text-xs font-medium transition-colors"
+            style={{ background: 'rgba(74,124,89,0.12)', color: '#4a7c59' }}>
+            <Search size={11} />
+            Review match
+          </button>
+          <button
+            onClick={onReject}
+            disabled={isUpdating}
+            className="flex flex-1 items-center justify-center gap-1.5 rounded-lg py-1.5 text-xs font-medium transition-colors"
+            style={{ background: 'rgba(127,140,141,0.10)', color: 'var(--text-muted)' }}>
+            {isUpdating ? <Loader2 size={11} className="animate-spin" /> : <Reject size={11} />}
+            Not a match
           </button>
         </div>
       ) : (
