@@ -1,8 +1,31 @@
 # RootLink — External Record Matching: A Design Proposal
 
-**Status:** proposal, not yet approved. Nothing in this document is built. It answers the
-question the continuation plan poses in §5, item 6: *"needs product/design thought before
-engineering"* — this is that thought, not a green light to start coding it.
+**Status: built.** Phase 1 (FamilySearch only) described below is now implemented —
+schema (`connectedAccounts`), OAuth connect/callback/disconnect, on-demand search,
+`researchHints` integration, and the field-by-field review-and-import modal. See the git
+log for the commits (`familysearch.service.ts`, `integrations.routes.ts`,
+`FamilySearchReviewModal.tsx`, and the search-trigger route on `persons.routes.ts`). This
+document is now a historical record of the reasoning behind what was built, not an open
+proposal — kept in place because the reasoning still matters for anyone extending it
+(e.g. eventually adding Findmypast behind the same `RecordMatchProvider`-shaped seam).
+
+**One scope cut made during implementation, not anticipated in the original proposal:**
+only year-based facts are importable through the review modal. Place import was cut
+because RootLink's `Place` schema requires a validated `country`/`countryCode`, and there
+is no reliable way to derive those from FamilySearch's free-text place strings without
+risking fabricated data — exactly the failure mode this whole feature is designed to
+avoid. A FamilySearch fact's place is shown as read-only reference text in the review
+modal so the user can copy it in manually; it is never written automatically. Solving
+this properly would need a real place-parsing/geocoding step, which is real, distinct,
+future scope (a `Places` API integration, or a manual place-matching UI), not something
+to fake with a best-guess country.
+
+**Also unverified, disclosed in code comments rather than asserted as fact:** the exact
+per-environment-tier API hostnames and the live JSON response shape from FamilySearch's
+Search-and-Match and Read-Person endpoints — built from published documentation, not a
+live account (no FamilySearch developer credentials or network access to
+familysearch.org in this sandbox). Confirm both against a real sandbox call before
+trusting this beyond local development.
 
 **Relationship to the PRD:** the PRD's §3.2 non-goal is specific and worth quoting exactly,
 because this whole proposal is an attempt to answer it, not route around it:
