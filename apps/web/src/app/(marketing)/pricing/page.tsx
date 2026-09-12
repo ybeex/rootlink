@@ -97,21 +97,26 @@ const FAQS = [
 export default function PricingPage() {
   return (
     <div>
-      <section className="mx-auto max-w-3xl px-6 pb-12 pt-16 text-center">
-        <span
-          className="inline-block rounded-full px-3 py-1 font-mono text-2xs font-medium uppercase tracking-wider"
-          style={{ background: 'var(--bg-subtle)', color: 'var(--text-muted)' }}
-        >
-          Pricing
-        </span>
-        <h1 className="mt-5 text-balance font-display text-4xl tracking-tight sm:text-5xl">
-          Plans sized to the tree, not the wallet.
-        </h1>
-        <p className="mx-auto mt-4 max-w-lg text-balance text-lg" style={{ color: 'var(--text-muted)' }}>
-          Every plan includes full GEDCOM export and the same privacy
-          guarantees for living relatives. Upgrading only changes how much
-          room you have.
-        </p>
+      <section
+        className="bg-cover bg-top bg-no-repeat px-6 pb-12 pt-16 text-center"
+        style={{ backgroundImage: "url('/pricing-bg.webp')", backgroundColor: 'var(--accent-primary)' }}
+      >
+        <div className="mx-auto max-w-3xl">
+          <span
+            className="inline-block rounded-full px-3 py-1 font-mono text-2xs font-medium uppercase tracking-wider"
+            style={{ background: 'rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.75)' }}
+          >
+            Pricing
+          </span>
+          <h1 className="mt-5 text-balance font-display text-4xl tracking-tight sm:text-5xl" style={{ color: 'white' }}>
+            Plans sized to the tree, not the wallet.
+          </h1>
+          <p className="mx-auto mt-4 max-w-lg text-balance text-lg" style={{ color: 'rgba(255,255,255,0.7)' }}>
+            Every plan includes full GEDCOM export and the same privacy
+            guarantees for living relatives. Upgrading only changes how much
+            room you have.
+          </p>
+        </div>
       </section>
 
       <section className="mx-auto max-w-6xl px-6 pb-20">

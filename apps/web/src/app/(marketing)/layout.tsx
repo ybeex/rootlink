@@ -13,19 +13,28 @@ const NAV_LINKS = [
   { href: '/about', label: 'About' },
 ];
 
-function Logo() {
+function Logo({ inverted = false }: { inverted?: boolean }) {
   return (
     <Link href="/" className="flex items-center gap-2.5">
-      <RootLinkLogo size="sm" />
-      </span>
+      <RootLinkLogo size="sm" inverted={inverted} />
     </Link>
   );
 }
+
+// Routes whose header sits directly on a dark background image/gradient at
+// the top of the page (before any scrolling) — the shared nav below needs
+// light text on these specifically, or it's unreadable until scrolled past.
+// The homepage already had this exact contrast problem before this file was
+// touched for the pricing background (found while making that change, fixed
+// alongside it): its own embedded hero nav already renders inverted, but the
+// shared sticky nav layered on top of it did not.
+const DARK_HEADER_ROUTES = ['/', '/pricing'];
 
 function MarketingNav() {
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const pathname = usePathname();
+  const isDarkHeader = DARK_HEADER_ROUTES.includes(pathname) && !scrolled;
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 8);
@@ -47,7 +56,7 @@ function MarketingNav() {
       }}
     >
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-6">
-        <Logo />
+        <Logo inverted={isDarkHeader} />
 
         <nav className="hidden items-center gap-8 md:flex">
           {NAV_LINKS.map((link) => (
@@ -56,7 +65,9 @@ function MarketingNav() {
               href={link.href}
               className="text-sm font-medium transition-colors"
               style={{
-                color: pathname === link.href ? 'var(--text-primary)' : 'var(--text-muted)',
+                color: isDarkHeader
+                  ? (pathname === link.href ? '#FFFFFF' : 'rgba(255,255,255,0.65)')
+                  : (pathname === link.href ? 'var(--text-primary)' : 'var(--text-muted)'),
               }}
             >
               {link.label}
@@ -68,7 +79,7 @@ function MarketingNav() {
           <Link
             href="/login"
             className="text-sm font-medium transition-colors"
-            style={{ color: 'var(--text-muted)' }}
+            style={{ color: isDarkHeader ? 'rgba(255,255,255,0.65)' : 'var(--text-muted)' }}
           >
             Log in
           </Link>
@@ -85,7 +96,7 @@ function MarketingNav() {
           onClick={() => setMobileOpen((v) => !v)}
           className="flex h-9 w-9 items-center justify-center rounded-lg md:hidden"
           aria-label={mobileOpen ? 'Close menu' : 'Open menu'}
-          style={{ color: 'var(--text-primary)' }}
+          style={{ color: isDarkHeader && !mobileOpen ? '#FFFFFF' : 'var(--text-primary)' }}
         >
           {mobileOpen ? <X size={20} /> : <Menu size={20} />}
         </button>

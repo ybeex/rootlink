@@ -35,6 +35,13 @@ export default function AboutPage() {
           the family still had.
         </p>
 
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src="/about-illustration.webp"
+          alt=""
+          className="mx-auto my-2 w-full max-w-xs rounded-2xl sm:max-w-sm"
+        />
+
         <p>
           That asymmetry — between the person building the tree and the
           people inside it — is the actual design problem RootLink starts

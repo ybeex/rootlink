@@ -16,6 +16,7 @@ const POSTS = [
     featured: true,
     accentColor: 'var(--accent-canopy)',
     date: 'June 12, 2026',
+    image: '/blog/how-to-start.webp',
   },
   {
     slug: 'privacy-problem',
@@ -24,6 +25,7 @@ const POSTS = [
     category: 'Thinking',
     readTime: '8 min',
     date: 'June 5, 2026',
+    image: '/blog/privacy-problem.webp',
   },
   {
     slug: 'ai-hints-approach',
@@ -32,6 +34,7 @@ const POSTS = [
     category: 'Product',
     readTime: '5 min',
     date: 'May 28, 2026',
+    image: '/blog/ai-hints-approach.webp',
   },
   {
     slug: 'three-generations',
@@ -40,6 +43,7 @@ const POSTS = [
     category: 'How-To',
     readTime: '7 min',
     date: 'May 18, 2026',
+    image: '/blog/three-generations.webp',
   },
   {
     slug: 'gedcom-explained',
@@ -48,6 +52,7 @@ const POSTS = [
     category: 'Research',
     readTime: '4 min',
     date: 'May 8, 2026',
+    image: '/blog/gedcom-explained.webp',
   },
   {
     slug: 'photographs-in-trees',
@@ -56,6 +61,7 @@ const POSTS = [
     category: 'How-To',
     readTime: '5 min',
     date: 'April 28, 2026',
+    image: '/blog/photographs-in-trees.webp',
   },
 ];
 
@@ -95,6 +101,10 @@ export default function BlogPage() {
       <div className="mx-auto max-w-5xl px-6 py-12">
         {/* ── Featured post — large editorial hero ────────────────────── */}
         <Link href={`/blog/${featured.slug}`} className="group block mb-14">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={featured.image} alt="" className="mb-6 w-full rounded-2xl transition-opacity group-hover:opacity-90"
+            style={{ aspectRatio: '1200 / 630', objectFit: 'cover' }} />
+
           {/* Coloured accent bar */}
           <div className="h-1 w-16 rounded-full mb-6 transition-all duration-300 group-hover:w-32"
             style={{ background: 'var(--accent-canopy)' }} />
@@ -146,6 +156,10 @@ export default function BlogPage() {
           {rest.map(post => (
             <Link key={post.slug} href={`/blog/${post.slug}`}
               className="group flex flex-col gap-3">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={post.image} alt="" className="rounded-xl transition-opacity group-hover:opacity-90"
+                style={{ aspectRatio: '1200 / 630', objectFit: 'cover' }} />
+
               {/* Accent line */}
               <div className="h-0.5 rounded-full w-8 transition-all duration-300 group-hover:w-16"
                 style={{ background: CATEGORY_STYLE[post.category]?.text ?? 'var(--border-strong)' }} />

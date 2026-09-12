@@ -9,11 +9,13 @@ import { notFound } from 'next/navigation';
 const POSTS: Record<string, {
   title: string; category: string; date: string; readTime: string;
   author: { name: string; role: string };
+  image: string;
   body: string;
 }> = {
   'how-to-start': {
     title: 'How to start a family tree when you don\'t know where to begin',
     category: 'How-To', date: 'June 12, 2026', readTime: '6 min',
+    image: '/blog/how-to-start.webp',
     author: { name: 'RootLink Team', role: '' },
     body: `
 The most common reason people don't start a family tree is that they don't know enough to start. They're waiting for the information they need to arrive before they begin. It doesn't work that way.
@@ -55,6 +57,7 @@ The goal of the first session is to make the tree exist. You can spend the rest 
   'privacy-problem': {
     title: 'The privacy problem with genealogy software nobody talks about',
     category: 'Thinking', date: 'June 5, 2026', readTime: '8 min',
+    image: '/blog/privacy-problem.webp',
     author: { name: 'RootLink Team', role: '' },
     body: `
 When you add your grandmother to a family tree, she probably doesn't know she's there.
@@ -93,6 +96,7 @@ We're not claiming to have solved this perfectly. But we think being explicit ab
   'ai-hints-approach': {
     title: 'We rebuilt how AI hints work. Here\'s why the old approach was wrong.',
     category: 'Product', date: 'May 28, 2026', readTime: '5 min',
+    image: '/blog/ai-hints-approach.webp',
     author: { name: 'RootLink Team', role: '' },
     body: `
 The original approach to AI research hints in RootLink pulled from outside sources. The idea was: describe someone in the tree, find matching records from historical databases, surface the most likely matches.
@@ -123,6 +127,7 @@ The distinction matters because a family tree is a record that outlasts the soft
   'three-generations': {
     title: 'Three generations in an afternoon: a practical method',
     category: 'How-To', date: 'May 18, 2026', readTime: '7 min',
+    image: '/blog/three-generations.webp',
     author: { name: 'RootLink Team', role: '' },
     body: `
 Three generations sounds modest. It's seven people: you, two parents, four grandparents. In practice, this is a meaningful family record — and you can build the structure in a few hours.
@@ -165,6 +170,7 @@ That useful state is the goal of an afternoon, not a comprehensive family histor
   'gedcom-explained': {
     title: 'GEDCOM explained for people who don\'t work in software',
     category: 'Research', date: 'May 8, 2026', readTime: '4 min',
+    image: '/blog/gedcom-explained.webp',
     author: { name: 'RootLink Team', role: '' },
     body: `
 GEDCOM stands for Genealogical Data Communication. It's a file format created in 1984 by the Church of Jesus Christ of Latter-day Saints, originally designed to standardize how genealogy software exchanged data between programs.
@@ -200,6 +206,7 @@ If you ever want to move your tree to a different application, import the GEDCOM
   'photographs-in-trees': {
     title: 'How to attach photographs in a way that actually survives',
     category: 'How-To', date: 'April 28, 2026', readTime: '5 min',
+    image: '/blog/photographs-in-trees.webp',
     author: { name: 'RootLink Team', role: '' },
     body: `
 A photograph separated from its context is a photograph waiting to be lost. A box of unlabelled family photos is one of the most common things to surface after someone dies, and one of the hardest things to do anything useful with.
@@ -250,6 +257,16 @@ export async function generateStaticParams() {
   return Object.keys(POSTS).map(slug => ({ slug }));
 }
 
+export function generateMetadata({ params }: { params: { slug: string } }) {
+  const post = POSTS[params.slug];
+  if (!post) return {};
+  return {
+    title: `${post.title} — RootLink`,
+    openGraph: { images: [{ url: post.image, width: 1200, height: 630, alt: post.title }] },
+    twitter: { card: 'summary_large_image', images: [post.image] },
+  };
+}
+
 export default function BlogPostPage({ params }: { params: { slug: string } }) {
   const post = POSTS[params.slug];
   if (!post) notFound();
@@ -272,6 +289,10 @@ export default function BlogPostPage({ params }: { params: { slug: string } }) {
 
       {/* Article */}
       <article className="mx-auto max-w-2xl px-6 py-14">
+        {/* Cover image */}
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src={post.image} alt="" className="mb-10 w-full rounded-2xl" style={{ aspectRatio: '1200 / 630', objectFit: 'cover' }} />
+
         {/* Header */}
         <header className="mb-12">
           <span className="text-2xs font-mono uppercase tracking-widest px-2 py-0.5 rounded-full"
