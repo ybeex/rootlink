@@ -121,8 +121,8 @@ export default function PersonDetailPage({ params }: Props) {
               : person.sex === 'female'
               ? 'rgba(196,122,192,0.12)'
               : 'var(--bg-subtle)',
-            color: person.sex === 'male' ? '#6688cc'
-              : person.sex === 'female' ? '#c47ac0'
+            color: person.sex === 'male' ? 'var(--sex-male)'
+              : person.sex === 'female' ? 'var(--sex-female)'
               : 'var(--text-faint)',
             fontFamily: 'var(--font-display)',
           }}>

@@ -23,7 +23,7 @@ interface PagedResult { data: AuditLogEntry[]; total: number; pages: number; pag
 
 const ACTION_COLOR: Record<string, string> = {
   'admin.update_user': 'var(--accent-ember)',
-  'admin.delete_tree': '#B02020',
+  'admin.delete_tree': 'var(--danger)',
   'auth.login':        '#3D7554',
   'auth.logout':       'var(--text-faint)',
   'auth.login_failed': '#D4862A',

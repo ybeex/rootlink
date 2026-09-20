@@ -260,7 +260,7 @@ export default function AdminUsersPage() {
                       )}
                       {suspended && (
                         <span className="rounded-full px-1.5 py-0.5 text-2xs font-medium"
-                          style={{ background: 'rgba(212,43,43,0.1)', color: '#B02020' }}>
+                          style={{ background: 'rgba(212,43,43,0.1)', color: 'var(--danger)' }}>
                           suspended
                         </span>
                       )}
@@ -294,7 +294,7 @@ export default function AdminUsersPage() {
                         <button
                           onClick={() => { if (confirm(`Suspend ${u.email}?`)) patchUser.mutate({ id: u.id, body: { suspended: true } }); }}
                           className="rounded px-2 py-1 text-2xs font-medium"
-                          style={{ color: '#B02020', background: 'rgba(212,43,43,0.08)' }}>
+                          style={{ color: 'var(--danger)', background: 'rgba(212,43,43,0.08)' }}>
                           Suspend
                         </button>
                       )}

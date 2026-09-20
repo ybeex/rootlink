@@ -26,7 +26,7 @@ const PROVIDER_LABEL: Record<DnaProvider, string> = {
 const STATUS_STYLE: Record<DnaKit['status'], { bg: string; text: string; label: string }> = {
   processing: { bg: 'var(--bg-subtle)',        text: 'var(--text-muted)',   label: 'Processing' },
   ready:      { bg: 'rgba(74,124,89,0.12)',    text: '#4a7c59',             label: 'Ready' },
-  failed:     { bg: 'rgba(227,50,9,0.10)',     text: '#e33209',             label: 'Failed' },
+  failed:     { bg: 'rgba(227,50,9,0.10)',     text: 'var(--danger)',             label: 'Failed' },
 };
 
 function dt(iso: string) {
@@ -228,7 +228,7 @@ export default function DnaPage() {
               {isDragActive ? 'Drop the raw data file here' : 'Drag & drop your raw data export (.txt/.csv), or click to browse'}
             </p>
             {uploadState === 'error' && (
-              <p className="mt-2 text-xs" style={{ color: '#e33209' }}>{errorMsg}</p>
+              <p className="mt-2 text-xs" style={{ color: 'var(--danger)' }}>{errorMsg}</p>
             )}
           </div>
         ) : (
@@ -276,14 +276,14 @@ export default function DnaPage() {
                     {kit.snpCount ? ` · ${kit.snpCount.toLocaleString()} SNPs` : ''}
                   </p>
                   {kit.status === 'failed' && kit.processingError && (
-                    <p className="mt-1.5 text-xs" style={{ color: '#e33209' }}>{kit.processingError}</p>
+                    <p className="mt-1.5 text-xs" style={{ color: 'var(--danger)' }}>{kit.processingError}</p>
                   )}
                 </div>
 
                 <div className="flex shrink-0 items-center gap-2">
                   {kit.status === 'processing' && <Loader2 size={16} className="animate-spin" style={{ color: 'var(--text-faint)' }} />}
                   {kit.status === 'ready' && <CheckCircle2 size={16} style={{ color: '#4a7c59' }} />}
-                  {kit.status === 'failed' && <XCircle size={16} style={{ color: '#e33209' }} />}
+                  {kit.status === 'failed' && <XCircle size={16} style={{ color: 'var(--danger)' }} />}
                   <button
                     onClick={(e) => { e.preventDefault(); deleteMutation.mutate(kit.id); }}
                     disabled={deleteMutation.isPending}

@@ -301,7 +301,7 @@ function SubscriptionSection() {
         </div>
         <div className="h-2 overflow-hidden rounded-full" style={{ background: 'var(--bg-muted)' }}>
           <div className="h-full rounded-full transition-all"
-            style={{ width: `${pct}%`, background: pct > 80 ? '#e33209' : 'var(--accent-primary)' }} />
+            style={{ width: `${pct}%`, background: pct > 80 ? 'var(--danger)' : 'var(--accent-primary)' }} />
         </div>
       </div>
 
@@ -549,7 +549,7 @@ function ApiKeysSection() {
                 onClick={() => revokeMutation.mutate(k.id)}
                 disabled={revokeMutation.isPending}
                 className="shrink-0 text-xs font-medium underline"
-                style={{ color: '#e33209' }}
+                style={{ color: 'var(--danger)' }}
               >
                 Revoke
               </button>
@@ -579,8 +579,8 @@ function DangerSection() {
 
   return (
     <SettingsCard title="Danger Zone" description="Irreversible actions. Please read carefully.">
-      <div className="rounded-xl p-4" style={{ border: '1px solid #e33209', background: 'rgba(227,50,9,0.03)' }}>
-        <h3 className="text-sm font-medium" style={{ color: '#e33209' }}>Delete Account</h3>
+      <div className="rounded-xl p-4" style={{ border: '1px solid var(--danger)', background: 'rgba(227,50,9,0.03)' }}>
+        <h3 className="text-sm font-medium" style={{ color: 'var(--danger)' }}>Delete Account</h3>
         <p className="mt-1 text-xs" style={{ color: 'var(--text-muted)' }}>
           Permanently deletes your account and all associated data. This cannot be undone.
           Your trees will be archived for 30 days before permanent deletion.
@@ -597,7 +597,7 @@ function DangerSection() {
             onClick={() => deleteMutation.mutate()}
             disabled={confirm !== 'delete my account' || deleteMutation.isPending}
             className="flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-medium text-white disabled:opacity-40"
-            style={{ background: '#e33209' }}>
+            style={{ background: 'var(--danger)' }}>
             {deleteMutation.isPending && <Loader2 size={13} className="animate-spin" />}
             <Trash2 size={13} />
             Delete My Account

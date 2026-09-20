@@ -22,9 +22,11 @@ The two heaviest files by far are `components/brand/icons/index.tsx` (93 literal
 
 `#e33209` (35 uses) and `#b02020` (10 uses) are both in active use as validation/error text color, across 16 different files, with **no `--danger` or `--error` custom property anywhere in `globals.css`.** The design doc's token section (§2.1) never mentions an error color at all — it was never formalized, so two slightly different reds accumulated independently. This is genuine drift, not a DRY nitpick: two different reds for the same semantic meaning is visible inconsistency. Fix: pick one (recommend `#e33209` — it's the overwhelming majority usage), add `--danger` / `--danger-soft` tokens in the same warm-tinted spirit as the rest of the palette, sweep both literals to the token.
 
-### Finding 3 — a real accessibility gap the design doc doesn't yet own up to
+### Finding 3 — a real but narrower accessibility gap than the raw numbers suggested
 
-`outline: none` / `outline-none` appears **44 times**. `:focus-visible` appears **once**. The design doc's §6.6 describes real, deliberate accessibility engineering for the tree canvas specifically — but that same rigor hasn't reached the other 43 places that suppress the default focus ring. This is a genuine keyboard-accessibility regression risk sitting right next to a section of the docs that says accessibility is taken seriously. Also found: 2 places (`FamilySearchReviewModal.tsx`, `NotificationsPanel.tsx`) using `onClick` on a `<div>`/`<span>` instead of a real button — not keyboard-reachable at all. Fix: a single `:focus-visible` treatment (amber ring, matching the existing `--accent-ember` language) added once, applied everywhere `outline-none` currently strips it bare; convert the two div/span click handlers to real buttons.
+The raw inventory count (44 `outline-none` vs. 1 `focus-visible`) looked alarming but mostly wasn't, once checked against how the cascade actually resolves: Tailwind's `outline-none` utility only sets `outline-color` to transparent (a deliberate Tailwind design choice, not a hard `outline: none`), and `globals.css` already has a hand-written `:focus-visible { outline: 2px solid var(--accent-ember); ... }` rule positioned *after* Tailwind's injected utilities in the compiled stylesheet. Equal specificity, later source order — the amber focus ring already wins and already shows for keyboard users on all 44 elements. No inline `style={{outline:'none'}}` (which *would* have defeated this) was found anywhere. **Verified false alarm, not fixed because nothing was broken.**
+
+What *was* real: 2 modal backdrops (`FamilySearchReviewModal.tsx`, `NotificationsPanel.tsx`) closed on click but had no `Escape`-to-close keyboard equivalent. Both already had genuine, tabbable `<button>` close controls inside the actual dialog, so this was never a hard keyboard trap — just a missing standard-convention shortcut. Fixed: added an `Escape` handler to both. Also added `aria-hidden="true"` to the one backdrop that's a true sibling of the dialog content in the DOM (`NotificationsPanel`) — checked first, and correctly *did not* add it to `FamilySearchReviewModal`'s backdrop, which turned out to be the dialog's own parent wrapper; `aria-hidden` there would have hidden the entire modal's content from screen readers, a worse regression than the gap it would have "fixed."
 
 ### Finding 4 — an undocumented but real, deliberate color convention
 
@@ -41,7 +43,17 @@ The two heaviest files by far are `components/brand/icons/index.tsx` (93 literal
 
 Static inventory covered all 167 files under `apps/web/src`. Targeted manual reads: `globals.css`, `Logo.tsx`, `icons/index.tsx`, the two div/span-onClick files, `PedigreeTree.tsx` (sex-color convention). Not yet individually read line-by-line: the remaining ~160 files — relying on the regex inventory plus this session's own accumulated knowledge of the codebase from building most of these features directly. Full per-file keep/fix/replace verdicts would be the next step if you confirm the audit-and-tighten scope.
 
-## Open questions (need your call before Phase 3)
+## Fixes applied (this pass)
 
-1. **Confirm scope**: audit-and-tighten (fix the 4 findings above + smaller ones, keep the thesis/palette/type as-is), or did you actually want a full visual rebrand despite the existing system? These are very different amounts of work and I don't want to guess wrong.
-2. **The sex-color convention** (Finding 4): keep blue/pink but tokenize it, replace it with something that fits the forest/amber palette (e.g., canopy-green / ember-amber / neutral, echoing the existing brand colors instead of a generic binary), or drop the color-coding entirely? This is a product decision as much as a visual one.
+- `--danger` / `--danger-soft` tokens added to `globals.css`; swept both competing literals (`#e33209`, `#b02020`) to `var(--danger)` across 24 files, 54 occurrences.
+- `--sex-male` / `--sex-female` / `--sex-unspecified` tokens added (kept the existing blue/pink values, per product decision — not replaced); swept both literals across the same 24-file sweep.
+- Escape-to-close added to the 2 modals that were missing it; `aria-hidden="true"` added to the 1 backdrop where it was structurally safe to do so (checked DOM nesting first — the other backdrop turned out to be the dialog's own parent wrapper, where `aria-hidden` would have hidden the real content instead of just the decorative scrim).
+- Confirmed via full-file balance checks (brace/paren counts) after every edit — no compiler available in this sandbox, so this is the verification method used throughout.
+
+## Open questions
+
+1. ~~Confirm scope~~ — resolved: audit-and-tighten, keep the existing thesis.
+2. ~~Sex-color convention~~ — resolved: keep blue/pink, tokenize it.
+
+Deferred, not attempted this pass (flagged, not silently dropped): the icon system's repeated raw-hex gradient stops (Finding 1 — real, but a larger, riskier refactor across 90+ icon definitions that deserves its own pass with render-and-verify checks, not bundled into this one); radius-scale reconciliation; a formal motion-duration scale; spacing-grid cleanup; tokenizing the per-instance button hover/active shadows.
+

@@ -3,7 +3,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Bell, X, Check, Lightbulb, BookOpen, Calendar, Users } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { api } from '../../lib/api-client';
 import { TreeNavIcon } from '../brand/icons';
 import type { Notification } from '@rootlink/shared';
@@ -29,6 +29,16 @@ const TYPE_COLORS: Record<string, string> = {
 
 export function NotificationsPanel() {
   const [open, setOpen]   = useState(false);
+
+  // Escape-to-close — the backdrop below already closes on click (mouse
+  // only); this was the missing keyboard equivalent (UI design upgrade
+  // audit). The panel's own close button was already a real <button>.
+  useEffect(() => {
+    if (!open) return;
+    const onKeyDown = (e: KeyboardEvent) => { if (e.key === 'Escape') setOpen(false); };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [open]);
   const queryClient       = useQueryClient();
 
   const { data } = useQuery({
@@ -66,7 +76,7 @@ export function NotificationsPanel() {
         {open && (
           <>
             {/* Backdrop */}
-            <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} />
+            <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} aria-hidden="true" />
 
             <motion.div
               initial={{ opacity: 0, y: -8, scale: 0.97 }}

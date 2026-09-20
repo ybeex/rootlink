@@ -171,7 +171,7 @@ export default function AdminTreesPage() {
                             deleteTree.mutate(t.id);
                         }}
                         className="flex items-center gap-1 rounded px-2 py-1 text-2xs font-medium"
-                        style={{ color: '#B02020', background: 'rgba(212,43,43,0.08)' }}
+                        style={{ color: 'var(--danger)', background: 'rgba(212,43,43,0.08)' }}
                         title="Soft-delete tree"
                       >
                         <Trash2 size={11} /> Delete

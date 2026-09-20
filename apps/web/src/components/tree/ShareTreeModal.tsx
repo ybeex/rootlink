@@ -108,7 +108,7 @@ export function ShareTreeModal({ treeId, treeName, shareToken, open, onClose }: 
                     onClick={() => revokeMutation.mutate()}
                     disabled={revokeMutation.isPending}
                     className="flex items-center gap-2 rounded-xl px-4 py-2 text-sm transition-colors"
-                    style={{ color: '#e33209' }}>
+                    style={{ color: 'var(--danger)' }}>
                     {revokeMutation.isPending
                       ? <Loader2 size={13} className="animate-spin" />
                       : <Trash2 size={13} />}

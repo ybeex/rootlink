@@ -106,15 +106,15 @@ export function InviteMemberModal({ treeId, treeName, open, onClose }: InviteMem
                     className="w-full rounded-xl py-2.5 pl-9 pr-3 text-sm outline-none transition-colors"
                     style={{
                       background: 'var(--bg-subtle)',
-                      border: `1px solid ${form.formState.errors.email ? '#e33209' : 'var(--border-default)'}`,
+                      border: `1px solid ${form.formState.errors.email ? 'var(--danger)' : 'var(--border-default)'}`,
                       color: 'var(--text-primary)',
                     }}
                     onFocus={(e) => { e.currentTarget.style.borderColor = 'var(--accent-ember)'; }}
-                    onBlur={(e)  => { e.currentTarget.style.borderColor = form.formState.errors.email ? '#e33209' : 'var(--border-default)'; }}
+                    onBlur={(e)  => { e.currentTarget.style.borderColor = form.formState.errors.email ? 'var(--danger)' : 'var(--border-default)'; }}
                   />
                 </div>
                 {form.formState.errors.email && (
-                  <p className="mt-1 text-xs" style={{ color: '#e33209' }}>
+                  <p className="mt-1 text-xs" style={{ color: 'var(--danger)' }}>
                     {form.formState.errors.email.message}
                   </p>
                 )}

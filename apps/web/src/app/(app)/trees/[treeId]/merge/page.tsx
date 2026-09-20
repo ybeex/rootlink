@@ -76,7 +76,7 @@ export default function MergePersonsPage() {
       {isLoading ? (
         <div className="py-16 text-center text-sm" style={{ color: 'var(--text-faint)' }}>Loading…</div>
       ) : error || !preview ? (
-        <div className="py-16 text-center text-sm" style={{ color: '#e33209' }}>
+        <div className="py-16 text-center text-sm" style={{ color: 'var(--danger)' }}>
           {error instanceof ApiClientError ? error.message : 'Could not load merge preview.'}
         </div>
       ) : (

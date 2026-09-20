@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { X, Loader2, ExternalLink } from 'lucide-react';
 import { toast } from 'sonner';
@@ -46,6 +46,18 @@ function eventInputFromEvent(e: VitalEvent) {
 export function FamilySearchReviewModal({ treeId, personId, hint, onClose }: Props) {
   const queryClient = useQueryClient();
   const [checked, setChecked] = useState<Set<number>>(new Set());
+
+  // Escape-to-close, matching standard modal convention. The backdrop div
+  // below already closes on click, but that's a mouse-only path — this
+  // was the missing keyboard equivalent (found via the UI design upgrade
+  // audit). The actual Close/Cancel buttons were already real, tabbable
+  // <button> elements, so keyboard users were never fully stuck, just
+  // without the expected Escape shortcut.
+  useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [onClose]);
 
   const { data: record, isLoading: loadingRecord } = useQuery({
     queryKey: ['familysearchRecord', hint.externalRecordId],

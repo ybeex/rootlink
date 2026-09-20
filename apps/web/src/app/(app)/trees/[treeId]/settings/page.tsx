@@ -213,8 +213,8 @@ export default function TreeSettingsPage({ params }: Props) {
 
       {/* Danger zone */}
       <div className="rounded-2xl p-6"
-        style={{ border: '1px solid #e33209', background: 'rgba(227,50,9,0.02)' }}>
-        <h2 className="mb-1 text-base font-semibold" style={{ color: '#e33209' }}>
+        style={{ border: '1px solid var(--danger)', background: 'rgba(227,50,9,0.02)' }}>
+        <h2 className="mb-1 text-base font-semibold" style={{ color: 'var(--danger)' }}>
           Danger Zone
         </h2>
         <p className="mb-5 text-sm" style={{ color: 'var(--text-muted)' }}>
@@ -241,7 +241,7 @@ export default function TreeSettingsPage({ params }: Props) {
             onClick={() => deleteMutation.mutate()}
             disabled={confirmDelete !== 'delete this tree' || deleteMutation.isPending}
             className="flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-medium text-white disabled:opacity-40"
-            style={{ background: '#e33209' }}>
+            style={{ background: 'var(--danger)' }}>
             {deleteMutation.isPending
               ? <Loader2 size={13} className="animate-spin" />
               : <Trash2 size={13} />}

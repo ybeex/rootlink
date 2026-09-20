@@ -104,11 +104,11 @@ export default function AdminUserDetailPage() {
               {user.isAdmin && <span title="Admin"><ShieldCheck size={15} style={{ color: 'var(--accent-ember)' }} /></span>}
               {suspended && (
                 <span className="rounded-full px-2 py-0.5 text-2xs font-medium"
-                  style={{ background: 'rgba(212,43,43,0.1)', color: '#B02020' }}>Suspended</span>
+                  style={{ background: 'rgba(212,43,43,0.1)', color: 'var(--danger)' }}>Suspended</span>
               )}
               {locked && (
                 <span className="rounded-full px-2 py-0.5 text-2xs font-medium"
-                  style={{ background: 'rgba(212,43,43,0.1)', color: '#B02020' }}>Locked</span>
+                  style={{ background: 'rgba(212,43,43,0.1)', color: 'var(--danger)' }}>Locked</span>
               )}
             </div>
             <p className="mt-0.5 text-sm" style={{ color: 'var(--text-muted)' }}>{user.email}</p>
@@ -179,7 +179,7 @@ export default function AdminUserDetailPage() {
             }}
             className="flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium"
             style={user.isAdmin
-              ? { background: 'rgba(212,43,43,0.08)', color: '#B02020' }
+              ? { background: 'rgba(212,43,43,0.08)', color: 'var(--danger)' }
               : { background: 'var(--bg-subtle)', color: 'var(--text-muted)' }}
           >
             {user.isAdmin
@@ -210,7 +210,7 @@ export default function AdminUserDetailPage() {
         {/* Suspend */}
         <div className="flex items-center justify-between border-t pt-4" style={{ borderColor: 'var(--border-subtle)' }}>
           <div>
-            <p className="text-sm font-medium" style={{ color: suspended ? '#B02020' : 'var(--text-secondary)' }}>
+            <p className="text-sm font-medium" style={{ color: suspended ? 'var(--danger)' : 'var(--text-secondary)' }}>
               {suspended ? 'Account suspended' : 'Suspend account'}
             </p>
             <p className="text-xs" style={{ color: 'var(--text-faint)' }}>
@@ -229,7 +229,7 @@ export default function AdminUserDetailPage() {
             <button
               onClick={() => { if (confirm(`Suspend ${user.email}?`)) patch.mutate({ suspended: true }); }}
               className="flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium"
-              style={{ background: 'rgba(212,43,43,0.08)', color: '#B02020' }}
+              style={{ background: 'rgba(212,43,43,0.08)', color: 'var(--danger)' }}
             >
               <AlertTriangle size={12} /> Suspend
             </button>

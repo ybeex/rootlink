@@ -42,6 +42,25 @@
   --accent-ember-soft:  #FAF0E0;   /* backgrounds */
   --accent-amber-glow:  rgba(201, 123, 47, 0.18);
 
+  /* ── Semantic: danger/error ──────────────────────────────────────────────
+     Previously two untokenized literals (#e33209, #b02020) used
+     interchangeably for the same meaning across 16 files — formalized
+     here as one value per the UI design upgrade audit
+     (design-upgrade/00-intake-and-audit.md, Finding 2). */
+  --danger:      #E33209;
+  --danger-soft: rgba(227, 50, 9, 0.08);
+
+  /* ── Semantic: sex indicator ──────────────────────────────────────────────
+     A real, deliberate convention already in consistent use across the
+     tree canvas, search, and person views — previously repeated as raw
+     hex in 5 files rather than tokenized. Kept as the existing blue/pink
+     values per product decision (not part of the forest/amber brand
+     palette by design — this is a data-indicator color, not a brand
+     color, the same distinction the app already draws for chart colors). */
+  --sex-male:        #6688CC;
+  --sex-female:      #C47AC0;
+  --sex-unspecified: var(--border-strong);
+
   /* ── 3D Shadows (warm-tinted, not grey) ── */
   --shadow-xs:  0 1px 2px rgba(14, 28, 24, 0.05);
   --shadow-sm:  0 1px 3px rgba(14, 28, 24, 0.06), 0 2px 8px rgba(14, 28, 24, 0.04);

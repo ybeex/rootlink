@@ -148,7 +148,7 @@ export function AddRelationshipModal({
                     className="w-full rounded-xl py-2.5 pl-8 pr-3 text-sm outline-none transition-colors"
                     style={{
                       background: 'var(--bg-subtle)',
-                      border: `1px solid ${!selectedId && form.formState.isSubmitted ? '#e33209' : 'var(--border-default)'}`,
+                      border: `1px solid ${!selectedId && form.formState.isSubmitted ? 'var(--danger)' : 'var(--border-default)'}`,
                       color: 'var(--text-primary)',
                     }}
                     onFocus={(e) => { e.currentTarget.style.borderColor = 'var(--accent-ember)'; }}
@@ -176,7 +176,7 @@ export function AddRelationshipModal({
                         <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg text-xs font-bold"
                           style={{
                             background: person.sex === 'male' ? 'rgba(102,136,204,0.12)' : person.sex === 'female' ? 'rgba(196,122,192,0.12)' : 'var(--bg-subtle)',
-                            color: person.sex === 'male' ? '#6688cc' : person.sex === 'female' ? '#c47ac0' : 'var(--text-faint)',
+                            color: person.sex === 'male' ? 'var(--sex-male)' : person.sex === 'female' ? 'var(--sex-female)' : 'var(--text-faint)',
                           }}>
                           {(person.isLiving ? '?' : person.displayName.charAt(0))}
                         </div>

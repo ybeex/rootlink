@@ -168,7 +168,7 @@ function FormField({
       `}</style>
       {children}
       {error && (
-        <p className="mt-1 text-xs" style={{ color: '#e33209' }}>{error}</p>
+        <p className="mt-1 text-xs" style={{ color: 'var(--danger)' }}>{error}</p>
       )}
     </div>
   );

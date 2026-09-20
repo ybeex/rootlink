@@ -107,7 +107,7 @@ export default function AcceptInvitePage({ searchParams }: Props) {
         {status === 'error' && (
           <>
             <div className="mb-4 flex justify-center">
-              <XCircle size={28} style={{ color: '#e33209' }} />
+              <XCircle size={28} style={{ color: 'var(--danger)' }} />
             </div>
             <h1 className="mb-2 text-xl font-semibold"
               style={{ fontFamily: 'var(--font-display)', color: 'var(--text-primary)' }}>

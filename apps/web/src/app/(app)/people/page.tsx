@@ -134,9 +134,9 @@ export default function PeoplePage() {
                           ? 'rgba(196,122,192,0.12)'
                           : 'var(--bg-subtle)',
                         color: person.sex === 'male'
-                          ? '#6688cc'
+                          ? 'var(--sex-male)'
                           : person.sex === 'female'
-                          ? '#c47ac0'
+                          ? 'var(--sex-female)'
                           : 'var(--text-faint)',
                         fontFamily: 'var(--font-display)',
                       }}>

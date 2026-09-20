@@ -94,14 +94,14 @@ export default function LoginPage() {
                 className="w-full rounded-xl px-3 py-2.5 text-sm outline-none transition-colors"
                 style={{
                   background: 'var(--bg-subtle)',
-                  border: `1px solid ${form.formState.errors.email ? '#e33209' : 'var(--border-default)'}`,
+                  border: `1px solid ${form.formState.errors.email ? 'var(--danger)' : 'var(--border-default)'}`,
                   color: 'var(--text-primary)',
                 }}
                 onFocus={(e) => { e.currentTarget.style.borderColor = 'var(--accent-ember)'; }}
-                onBlur={(e)  => { e.currentTarget.style.borderColor = form.formState.errors.email ? '#e33209' : 'var(--border-default)'; }}
+                onBlur={(e)  => { e.currentTarget.style.borderColor = form.formState.errors.email ? 'var(--danger)' : 'var(--border-default)'; }}
               />
               {form.formState.errors.email && (
-                <p className="mt-1 text-xs" style={{ color: '#e33209' }}>
+                <p className="mt-1 text-xs" style={{ color: 'var(--danger)' }}>
                   {form.formState.errors.email.message}
                 </p>
               )}
@@ -126,11 +126,11 @@ export default function LoginPage() {
                   className="w-full rounded-xl px-3 py-2.5 pr-10 text-sm outline-none transition-colors"
                   style={{
                     background: 'var(--bg-subtle)',
-                    border: `1px solid ${form.formState.errors.password ? '#e33209' : 'var(--border-default)'}`,
+                    border: `1px solid ${form.formState.errors.password ? 'var(--danger)' : 'var(--border-default)'}`,
                     color: 'var(--text-primary)',
                   }}
                   onFocus={(e) => { e.currentTarget.style.borderColor = 'var(--accent-ember)'; }}
-                  onBlur={(e)  => { e.currentTarget.style.borderColor = form.formState.errors.password ? '#e33209' : 'var(--border-default)'; }}
+                  onBlur={(e)  => { e.currentTarget.style.borderColor = form.formState.errors.password ? 'var(--danger)' : 'var(--border-default)'; }}
                 />
                 <button type="button" onClick={() => setShowPass(!showPass)}
                   className="absolute right-3 top-1/2 -translate-y-1/2"

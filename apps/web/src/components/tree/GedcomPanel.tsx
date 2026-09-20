@@ -197,7 +197,7 @@ export function GedcomPanel({ treeId, open, onClose }: GedcomPanelProps) {
                         : 'Check the box above to enable upload'}
                     </p>
                     {uploadState === 'error' && (
-                      <p className="mt-2 text-xs" style={{ color: '#e33209' }}>{errorMsg}</p>
+                      <p className="mt-2 text-xs" style={{ color: 'var(--danger)' }}>{errorMsg}</p>
                     )}
                   </div>
                 ) : uploadState === 'uploading' ? (

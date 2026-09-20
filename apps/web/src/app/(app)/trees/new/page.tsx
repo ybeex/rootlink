@@ -69,14 +69,14 @@ export default function NewTreePage() {
               className="w-full rounded-xl px-3 py-2.5 text-sm outline-none transition-colors"
               style={{
                 background: 'var(--bg-subtle)',
-                border: `1px solid ${form.formState.errors.name ? '#e33209' : 'var(--border-default)'}`,
+                border: `1px solid ${form.formState.errors.name ? 'var(--danger)' : 'var(--border-default)'}`,
                 color: 'var(--text-primary)',
               }}
               onFocus={(e) => { e.currentTarget.style.borderColor = 'var(--accent-ember)'; }}
-              onBlur={(e)  => { e.currentTarget.style.borderColor = form.formState.errors.name ? '#e33209' : 'var(--border-default)'; }}
+              onBlur={(e)  => { e.currentTarget.style.borderColor = form.formState.errors.name ? 'var(--danger)' : 'var(--border-default)'; }}
             />
             {form.formState.errors.name && (
-              <p className="mt-1 text-xs" style={{ color: '#e33209' }}>
+              <p className="mt-1 text-xs" style={{ color: 'var(--danger)' }}>
                 {form.formState.errors.name.message}
               </p>
             )}

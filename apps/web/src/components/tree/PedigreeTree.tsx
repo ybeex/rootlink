@@ -51,7 +51,7 @@ const FAN_MAX_GEN    = 5;    // generations shown before the fan would get unrea
 // ── Shared helpers ───────────────────────────────────────────────────────────
 
 function sexColor(sex: PersonSummary['sex']): string {
-  return sex === 'male' ? '#6688cc' : sex === 'female' ? '#c47ac0' : 'var(--border-strong)';
+  return sex === 'male' ? 'var(--sex-male)' : sex === 'female' ? 'var(--sex-female)' : 'var(--border-strong)';
 }
 
 function qualityColor(score: number): string {

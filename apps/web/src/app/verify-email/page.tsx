@@ -55,7 +55,7 @@ export default function VerifyEmailPage({ searchParams }: Props) {
           {status === 'error' && (
             <div className="flex h-14 w-14 items-center justify-center rounded-2xl"
               style={{ background: 'rgba(227,50,9,0.08)' }}>
-              <XCircle size={28} style={{ color: '#e33209' }} />
+              <XCircle size={28} style={{ color: 'var(--danger)' }} />
             </div>
           )}
         </div>
