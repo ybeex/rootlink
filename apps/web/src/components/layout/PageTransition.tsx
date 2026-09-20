@@ -1,7 +1,7 @@
 'use client';
 
 import { usePathname } from 'next/navigation';
-import { AnimatePresence, motion } from 'framer-motion';
+import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 
 // ── PageTransition ───────────────────────────────────────────────────────────
 //
@@ -33,16 +33,22 @@ const variants = {
 
 export function PageTransition({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
+  // The global CSS reduced-motion block (globals.css) only catches
+  // CSS `transition`/`animation` — it has no effect on Framer Motion,
+  // which drives its own values via requestAnimationFrame. This runs on
+  // every single route change in the app, making it the single most
+  // consequential place that preference was previously being ignored.
+  const reduceMotion = useReducedMotion();
 
   return (
     <AnimatePresence mode="wait" initial={false}>
       <motion.div
         key={pathname}
         variants={variants}
-        initial="initial"
+        initial={reduceMotion ? false : 'initial'}
         animate="animate"
-        exit="exit"
-        transition={{ duration: 0.22, ease: [0.33, 1, 0.68, 1] }}
+        exit={reduceMotion ? undefined : 'exit'}
+        transition={reduceMotion ? { duration: 0 } : { duration: 0.22, ease: [0.33, 1, 0.68, 1] }}
       >
         {children}
       </motion.div>

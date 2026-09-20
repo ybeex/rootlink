@@ -258,17 +258,33 @@ code, pre, .font-mono { font-family: var(--font-mono); }
 /* ─── 3D CARD / SURFACE ──────────────────────────────────────────────────── */
 
 .card {
+  position: relative;
   background: var(--bg-surface);
   border: 1px solid var(--border-default);
   border-radius: 16px;
   box-shadow: var(--shadow-card);
-  transition: box-shadow 0.25s var(--ease-out), transform 0.25s var(--ease-out);
 }
-.card:hover { box-shadow: var(--shadow-card-hover); }
+/* Hover shadow as an opacity-crossfaded overlay, not a directly-animated
+   box-shadow — box-shadow forces paint/layout on every frame of the
+   transition; animating only opacity keeps this on the compositor.
+   Visually identical result, cheaper to run. */
+.card::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  box-shadow: var(--shadow-card-hover);
+  opacity: 0;
+  transition: opacity 0.25s var(--ease-out);
+  pointer-events: none;
+}
+.card:hover::after { opacity: 1; }
 
+.card-lift {
+  transition: transform 0.25s var(--ease-out);
+}
 .card-lift:hover {
   transform: translateY(-2px);
-  box-shadow: var(--shadow-card-hover);
 }
 
 /* Glass morphism — for hero overlays */
