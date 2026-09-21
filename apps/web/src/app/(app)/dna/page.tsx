@@ -26,7 +26,7 @@ const PROVIDER_LABEL: Record<DnaProvider, string> = {
 const STATUS_STYLE: Record<DnaKit['status'], { bg: string; text: string; label: string }> = {
   processing: { bg: 'var(--bg-subtle)',        text: 'var(--text-muted)',   label: 'Processing' },
   ready:      { bg: 'rgba(74,124,89,0.12)',    text: '#4a7c59',             label: 'Ready' },
-  failed:     { bg: 'rgba(227,50,9,0.10)',     text: 'var(--danger)',             label: 'Failed' },
+  failed:     { bg: 'var(--danger-soft)',     text: 'var(--danger)',             label: 'Failed' },
 };
 
 function dt(iso: string) {

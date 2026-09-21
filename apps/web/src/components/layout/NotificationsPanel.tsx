@@ -1,7 +1,7 @@
 'use client';
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import { Bell, X, Check, Lightbulb, BookOpen, Calendar, Users } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { api } from '../../lib/api-client';
@@ -24,11 +24,12 @@ const TYPE_COLORS: Record<string, string> = {
   bio_ready:         'rgba(102,136,204,0.12)',
   tree_invite:       'rgba(74,124,89,0.12)',
   birthday_reminder: 'rgba(242,78,14,0.10)',
-  conflict_detected: 'rgba(227,50,9,0.10)',
+  conflict_detected: 'var(--danger-soft)',
 };
 
 export function NotificationsPanel() {
   const [open, setOpen]   = useState(false);
+  const reduceMotion = useReducedMotion();
 
   // Escape-to-close — the backdrop below already closes on click (mouse
   // only); this was the missing keyboard equivalent (UI design upgrade
@@ -79,9 +80,9 @@ export function NotificationsPanel() {
             <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} aria-hidden="true" />
 
             <motion.div
-              initial={{ opacity: 0, y: -8, scale: 0.97 }}
+              initial={{ opacity: 0, y: reduceMotion ? 0 : -8, scale: reduceMotion ? 1 : 0.97 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: -8, scale: 0.97 }}
+              exit={{ opacity: 0, y: reduceMotion ? 0 : -8, scale: reduceMotion ? 1 : 0.97 }}
               transition={{ duration: 0.15 }}
               className="absolute right-0 top-10 z-50 w-80 overflow-hidden rounded-2xl"
               style={{

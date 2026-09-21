@@ -5,7 +5,7 @@ import { useForm } from 'react-hook-form';
 import { useMutation, useQueryClient, useQuery } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { X, Loader2, Search } from 'lucide-react';
-import { AnimatePresence, motion } from 'framer-motion';
+import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import { api, ApiClientError } from '../../lib/api-client';
 import type { PersonSummary, Relationship, PaginatedResponse } from '@rootlink/shared';
 import { RELATIONSHIP_TYPES, formatRelationshipType } from '@rootlink/shared';
@@ -29,6 +29,7 @@ export function AddRelationshipModal({
   treeId, fromPersonId, fromPersonName, open, onClose,
 }: AddRelationshipModalProps) {
   const queryClient = useQueryClient();
+  const reduceMotion = useReducedMotion();
   const [search, setSearch] = useState('');
   const debouncedSearch     = useDebounce(search, 300);
 
@@ -84,9 +85,9 @@ export function AddRelationshipModal({
           style={{ background: 'rgba(0,0,0,0.5)' }}
           onClick={onClose}>
           <motion.div
-            initial={{ opacity: 0, scale: 0.95, y: 12 }}
+            initial={{ opacity: 0, scale: reduceMotion ? 1 : 0.95, y: reduceMotion ? 0 : 12 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.95 }}
+            exit={{ opacity: 0, scale: reduceMotion ? 1 : 0.95 }}
             className="w-full max-w-md overflow-hidden rounded-2xl"
             style={{ background: 'var(--bg-surface)', border: '1px solid var(--border-default)', boxShadow: 'var(--shadow-lg)' }}
             onClick={(e) => e.stopPropagation()}>
@@ -175,7 +176,7 @@ export function AddRelationshipModal({
                         }}>
                         <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg text-xs font-bold"
                           style={{
-                            background: person.sex === 'male' ? 'rgba(102,136,204,0.12)' : person.sex === 'female' ? 'rgba(196,122,192,0.12)' : 'var(--bg-subtle)',
+                            background: person.sex === 'male' ? 'var(--sex-male-soft)' : person.sex === 'female' ? 'var(--sex-female-soft)' : 'var(--bg-subtle)',
                             color: person.sex === 'male' ? 'var(--sex-male)' : person.sex === 'female' ? 'var(--sex-female)' : 'var(--text-faint)',
                           }}>
                           {(person.isLiving ? '?' : person.displayName.charAt(0))}

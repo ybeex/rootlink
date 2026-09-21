@@ -60,6 +60,8 @@
   --sex-male:        #6688CC;
   --sex-female:      #C47AC0;
   --sex-unspecified: var(--border-strong);
+  --sex-male-soft:   rgba(102, 136, 204, 0.12);
+  --sex-female-soft: rgba(196, 122, 192, 0.12);
 
   /* ── 3D Shadows (warm-tinted, not grey) ── */
   --shadow-xs:  0 1px 2px rgba(14, 28, 24, 0.05);

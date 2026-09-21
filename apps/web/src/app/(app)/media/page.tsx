@@ -296,7 +296,7 @@ export default function MediaPage() {
                   <button onClick={() => deleteMutation.mutate(lightbox.id)}
                     disabled={deleteMutation.isPending}
                     className="flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium"
-                    style={{ background: 'rgba(227,50,9,0.08)', color: 'var(--danger)' }}>
+                    style={{ background: 'var(--danger-soft)', color: 'var(--danger)' }}>
                     {deleteMutation.isPending && <Loader2 size={11} className="animate-spin" />}
                     Delete
                   </button>

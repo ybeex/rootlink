@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { X, Search, Route, ArrowRight } from 'lucide-react';
-import { AnimatePresence, motion } from 'framer-motion';
+import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import { api } from '../../lib/api-client';
 import type { PersonSummary, PaginatedResponse, RelationshipPathResult } from '@rootlink/shared';
 import { useDebounce } from '../../hooks/useDebounce';
@@ -19,6 +19,7 @@ interface RelationshipFinderModalProps {
 export function RelationshipFinderModal({
   treeId, fromPersonId, fromPersonName, open, onClose,
 }: RelationshipFinderModalProps) {
+  const reduceMotion = useReducedMotion();
   const [search, setSearch] = useState('');
   const [targetId, setTargetId] = useState<string | null>(null);
   const [targetName, setTargetName] = useState('');
@@ -59,9 +60,9 @@ export function RelationshipFinderModal({
           onClick={() => { reset(); onClose(); }}
         >
           <motion.div
-            initial={{ opacity: 0, scale: 0.95, y: 12 }}
+            initial={{ opacity: 0, scale: reduceMotion ? 1 : 0.95, y: reduceMotion ? 0 : 12 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.95 }}
+            exit={{ opacity: 0, scale: reduceMotion ? 1 : 0.95 }}
             className="w-full max-w-md overflow-hidden rounded-2xl"
             style={{ background: 'var(--bg-surface)', border: '1px solid var(--border-default)', boxShadow: 'var(--shadow-lg)' }}
             onClick={(e) => e.stopPropagation()}

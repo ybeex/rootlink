@@ -3,7 +3,7 @@
 import { useState, useCallback } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useDropzone } from 'react-dropzone';
-import { AnimatePresence, motion } from 'framer-motion';
+import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import { X, Upload, Download, FileText, Loader2, CheckCircle2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { api, ApiClientError } from '../../lib/api-client';
@@ -18,6 +18,7 @@ type UploadState = 'idle' | 'uploading' | 'processing' | 'done' | 'error';
 
 export function GedcomPanel({ treeId, open, onClose }: GedcomPanelProps) {
   const queryClient  = useQueryClient();
+  const reduceMotion = useReducedMotion();
   const [uploadState, setUploadState] = useState<UploadState>('idle');
   const [errorMsg, setErrorMsg]       = useState<string>('');
   const [acknowledgedDuplicateRisk, setAcknowledgedDuplicateRisk] = useState(false);
@@ -98,9 +99,9 @@ export function GedcomPanel({ treeId, open, onClose }: GedcomPanelProps) {
           style={{ background: 'rgba(0,0,0,0.5)' }}
           onClick={onClose}>
           <motion.div
-            initial={{ opacity: 0, scale: 0.95, y: 12 }}
+            initial={{ opacity: 0, scale: reduceMotion ? 1 : 0.95, y: reduceMotion ? 0 : 12 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.95 }}
+            exit={{ opacity: 0, scale: reduceMotion ? 1 : 0.95 }}
             className="w-full max-w-lg overflow-hidden rounded-2xl"
             style={{ background: 'var(--bg-surface)', border: '1px solid var(--border-default)', boxShadow: 'var(--shadow-lg)' }}
             onClick={(e) => e.stopPropagation()}>

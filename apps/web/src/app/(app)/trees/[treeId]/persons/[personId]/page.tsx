@@ -117,9 +117,9 @@ export default function PersonDetailPage({ params }: Props) {
           className="flex h-20 w-20 shrink-0 items-center justify-center rounded-2xl text-3xl font-bold"
           style={{
             background:  person.sex === 'male'
-              ? 'rgba(102,136,204,0.12)'
+              ? 'var(--sex-male-soft)'
               : person.sex === 'female'
-              ? 'rgba(196,122,192,0.12)'
+              ? 'var(--sex-female-soft)'
               : 'var(--bg-subtle)',
             color: person.sex === 'male' ? 'var(--sex-male)'
               : person.sex === 'female' ? 'var(--sex-female)'

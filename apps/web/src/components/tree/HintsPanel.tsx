@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import { X, Check, X as Reject, ExternalLink, Lightbulb, Loader2, Zap, GitMerge, Search } from 'lucide-react';
 import { toast } from 'sonner';
 import Link from 'next/link';
@@ -19,6 +19,7 @@ interface HintsPanelProps {
 export function HintsPanel({ treeId, open, onClose }: HintsPanelProps) {
   const queryClient = useQueryClient();
   const [reviewingHint, setReviewingHint] = useState<ResearchHint | null>(null);
+  const reduceMotion = useReducedMotion();
 
   const { data, isLoading } = useQuery({
     queryKey: ['hints', treeId],
@@ -43,10 +44,10 @@ export function HintsPanel({ treeId, open, onClose }: HintsPanelProps) {
     <AnimatePresence>
       {open && (
         <motion.div
-          initial={{ opacity: 0, x: 20 }}
+          initial={{ opacity: 0, x: reduceMotion ? 0 : 20 }}
           animate={{ opacity: 1, x: 0 }}
-          exit={{ opacity: 0, x: 20 }}
-          transition={{ type: 'spring', stiffness: 400, damping: 38 }}
+          exit={{ opacity: 0, x: reduceMotion ? 0 : 20 }}
+          transition={reduceMotion ? { duration: 0.15 } : { type: 'spring', stiffness: 400, damping: 38 }}
           className="absolute right-0 top-0 z-20 h-full w-88 overflow-hidden"
           style={{
             background: 'var(--bg-surface)',

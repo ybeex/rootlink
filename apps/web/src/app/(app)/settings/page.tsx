@@ -579,7 +579,7 @@ function DangerSection() {
 
   return (
     <SettingsCard title="Danger Zone" description="Irreversible actions. Please read carefully.">
-      <div className="rounded-xl p-4" style={{ border: '1px solid var(--danger)', background: 'rgba(227,50,9,0.03)' }}>
+      <div className="rounded-xl p-4" style={{ border: '1px solid var(--danger)', background: 'var(--danger-soft)' }}>
         <h3 className="text-sm font-medium" style={{ color: 'var(--danger)' }}>Delete Account</h3>
         <p className="mt-1 text-xs" style={{ color: 'var(--text-muted)' }}>
           Permanently deletes your account and all associated data. This cannot be undone.

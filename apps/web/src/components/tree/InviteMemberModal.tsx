@@ -3,7 +3,7 @@
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { AnimatePresence, motion } from 'framer-motion';
+import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import { X, Loader2, UserPlus, Mail } from 'lucide-react';
 import { toast } from 'sonner';
 import { inviteMemberSchema, type InviteMemberInput } from '@rootlink/shared';
@@ -18,6 +18,7 @@ interface InviteMemberModalProps {
 
 export function InviteMemberModal({ treeId, treeName, open, onClose }: InviteMemberModalProps) {
   const queryClient = useQueryClient();
+  const reduceMotion = useReducedMotion();
 
   const form = useForm<InviteMemberInput>({
     resolver: zodResolver(inviteMemberSchema),
@@ -55,9 +56,9 @@ export function InviteMemberModal({ treeId, treeName, open, onClose }: InviteMem
           style={{ background: 'rgba(0,0,0,0.5)' }}
           onClick={onClose}>
           <motion.div
-            initial={{ opacity: 0, scale: 0.95, y: 12 }}
+            initial={{ opacity: 0, scale: reduceMotion ? 1 : 0.95, y: reduceMotion ? 0 : 12 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.95 }}
+            exit={{ opacity: 0, scale: reduceMotion ? 1 : 0.95 }}
             className="w-full max-w-md overflow-hidden rounded-2xl"
             style={{
               background:   'var(--bg-surface)',

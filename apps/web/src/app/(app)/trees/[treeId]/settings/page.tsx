@@ -213,7 +213,7 @@ export default function TreeSettingsPage({ params }: Props) {
 
       {/* Danger zone */}
       <div className="rounded-2xl p-6"
-        style={{ border: '1px solid var(--danger)', background: 'rgba(227,50,9,0.02)' }}>
+        style={{ border: '1px solid var(--danger)', background: 'var(--danger-soft)' }}>
         <h2 className="mb-1 text-base font-semibold" style={{ color: 'var(--danger)' }}>
           Danger Zone
         </h2>

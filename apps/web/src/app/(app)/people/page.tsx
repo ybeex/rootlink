@@ -129,9 +129,9 @@ export default function PeoplePage() {
                     <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-xl text-lg font-bold"
                       style={{
                         background: person.sex === 'male'
-                          ? 'rgba(102,136,204,0.12)'
+                          ? 'var(--sex-male-soft)'
                           : person.sex === 'female'
-                          ? 'rgba(196,122,192,0.12)'
+                          ? 'var(--sex-female-soft)'
                           : 'var(--bg-subtle)',
                         color: person.sex === 'male'
                           ? 'var(--sex-male)'

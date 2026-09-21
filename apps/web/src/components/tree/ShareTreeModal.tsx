@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { AnimatePresence, motion } from 'framer-motion';
+import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import { X, Copy, Check, Link2, Trash2, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { api } from '../../lib/api-client';
@@ -18,6 +18,12 @@ interface ShareTreeModalProps {
 export function ShareTreeModal({ treeId, treeName, shareToken, open, onClose }: ShareTreeModalProps) {
   const queryClient = useQueryClient();
   const [copied, setCopied] = useState(false);
+  // Backdrop below is opacity-only already (safe as-is); the panel's
+  // scale+y transform is the part that needs neutralizing under reduced
+  // motion — `animate` is left untouched since it's already the settled
+  // end state, only `initial`/`exit` (the part of the transform that
+  // actually moves) are conditioned.
+  const reduceMotion = useReducedMotion();
 
   const appUrl = typeof window !== 'undefined' ? window.location.origin : 'https://rootlink.app';
   const shareUrl = shareToken ? `${appUrl}/shared?token=${shareToken}` : null;
@@ -56,9 +62,9 @@ export function ShareTreeModal({ treeId, treeName, shareToken, open, onClose }: 
           style={{ background: 'rgba(0,0,0,0.5)' }}
           onClick={onClose}>
           <motion.div
-            initial={{ opacity: 0, scale: 0.95, y: 12 }}
+            initial={{ opacity: 0, scale: reduceMotion ? 1 : 0.95, y: reduceMotion ? 0 : 12 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.95 }}
+            exit={{ opacity: 0, scale: reduceMotion ? 1 : 0.95 }}
             className="w-full max-w-md overflow-hidden rounded-2xl"
             style={{ background: 'var(--bg-surface)', border: '1px solid var(--border-default)', boxShadow: 'var(--shadow-lg)' }}
             onClick={(e) => e.stopPropagation()}>
