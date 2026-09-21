@@ -4,7 +4,7 @@ import { useCallback, useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useDropzone } from 'react-dropzone';
 import Link from 'next/link';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import {
   Upload, Loader2, CheckCircle2, XCircle, Trash2, ChevronRight,
   Info, Lock,
@@ -332,6 +332,7 @@ export default function DnaPage() {
 // comment. Same honesty standard as the PRD's non-goal about never
 // presenting external record matches as verified fact.
 function HowThisWorksPanel({ open, onClose }: { open: boolean; onClose: () => void }) {
+  const reduceMotion = useReducedMotion();
   return (
     <AnimatePresence>
       {open && (
@@ -342,9 +343,9 @@ function HowThisWorksPanel({ open, onClose }: { open: boolean; onClose: () => vo
           onClick={onClose}
         >
           <motion.div
-            initial={{ opacity: 0, scale: 0.95, y: 12 }}
+            initial={{ opacity: 0, scale: reduceMotion ? 1 : 0.95, y: reduceMotion ? 0 : 12 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.95 }}
+            exit={{ opacity: 0, scale: reduceMotion ? 1 : 0.95 }}
             className="w-full max-w-lg overflow-hidden rounded-2xl"
             style={{ background: 'var(--bg-surface)', border: '1px solid var(--border-default)', boxShadow: 'var(--shadow-lg)' }}
             onClick={(e) => e.stopPropagation()}

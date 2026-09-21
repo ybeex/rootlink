@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import { X, Calendar, BookOpen, Camera, Star, Clock, Plus, Pencil } from 'lucide-react';
 import { api, ApiClientError } from '../../lib/api-client';
 import { formatPartialDate, getDisplayName } from '@rootlink/shared';
@@ -24,6 +24,7 @@ type PersonWithEvents = Person & { events: VitalEvent[] };
 
 export function PersonPanel({ treeId, personId, onClose, onEdit, readOnly = false, shareToken }: PersonPanelProps) {
   const [showAddRelation, setShowAddRelation] = useState(false);
+  const reduceMotion = useReducedMotion();
 
   const { data: person, isLoading, error } = useQuery({
     queryKey: ['person', treeId, personId, shareToken],
@@ -60,10 +61,10 @@ export function PersonPanel({ treeId, personId, onClose, onEdit, readOnly = fals
         {personId && (
           <motion.aside
             key="person-panel"
-            initial={{ x: '100%', opacity: 0 }}
+            initial={{ x: reduceMotion ? 0 : '100%', opacity: 0 }}
             animate={{ x: 0, opacity: 1 }}
-            exit={{ x: '100%', opacity: 0 }}
-            transition={{ type: 'spring', stiffness: 380, damping: 38 }}
+            exit={{ x: reduceMotion ? 0 : '100%', opacity: 0 }}
+            transition={reduceMotion ? { duration: 0.15 } : { type: 'spring', stiffness: 380, damping: 38 }}
             className="absolute right-0 top-0 h-full w-88 overflow-y-auto"
             style={{
               background:  'var(--bg-surface)',

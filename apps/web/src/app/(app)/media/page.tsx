@@ -3,7 +3,7 @@
 import { useState, useCallback, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useDropzone } from 'react-dropzone';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import { Upload, Image as ImageIcon, FileText, Music, Video, X, Loader2, ChevronDown } from 'lucide-react';
 import { toast } from 'sonner';
 import { api, ApiClientError } from '../../../lib/api-client';
@@ -35,6 +35,7 @@ function detectType(mimeType: string): string {
 }
 
 export default function MediaPage() {
+  const reduceMotion = useReducedMotion();
   const queryClient        = useQueryClient();
   const [activeTid, setActiveTid] = useState<string>('');
   const [uploading, setUploading] = useState<string[]>([]);
@@ -245,7 +246,7 @@ export default function MediaPage() {
             className="fixed inset-0 z-50 flex items-center justify-center p-4"
             style={{ background: 'rgba(0,0,0,0.85)' }}
             onClick={() => setLightbox(null)}>
-            <motion.div initial={{ scale: 0.9 }} animate={{ scale: 1 }} exit={{ scale: 0.9 }}
+            <motion.div initial={{ scale: reduceMotion ? 1 : 0.9 }} animate={{ scale: 1 }} exit={{ scale: reduceMotion ? 1 : 0.9 }}
               className="relative max-h-[90vh] max-w-3xl overflow-hidden rounded-2xl"
               style={{ background: 'var(--bg-surface)' }}
               onClick={(e) => e.stopPropagation()}>

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import { ArrowRight, ChevronLeft } from 'lucide-react';
 import { useMutation } from '@tanstack/react-query';
 import { api, ApiClientError } from '../../../lib/api-client';
@@ -31,6 +31,7 @@ const STEPS = [
 
 // ── Mini tree preview SVG ────────────────────────────────────────────────────
 function MiniTreePreview({ step, data }: { step: number; data: OnboardingState }) {
+  const reduceMotion = useReducedMotion();
   const hasYou     = step >= 0 && data.yourName;
   const hasParent  = step >= 2 && data.parentName;
   const white      = 'rgba(255,255,255,0.75)';
@@ -48,8 +49,8 @@ function MiniTreePreview({ step, data }: { step: number; data: OnboardingState }
         {hasYou && (
           <motion.line x1="100" y1="200" x2="100" y2="150"
             stroke={white} strokeWidth="2.5" strokeLinecap="round"
-            initial={{ pathLength: 0 }} animate={{ pathLength: 1 }}
-            transition={{ duration: 0.6, ease: [0.65, 0, 0.35, 1] }} />
+            initial={{ pathLength: reduceMotion ? 1 : 0 }} animate={{ pathLength: 1 }}
+            transition={reduceMotion ? { duration: 0 } : { duration: 0.6, ease: [0.65, 0, 0.35, 1] }} />
         )}
 
         {/* Parent branch */}
@@ -59,15 +60,15 @@ function MiniTreePreview({ step, data }: { step: number; data: OnboardingState }
               ? 'M100 160 Q70 145 50 130'
               : 'M100 160 Q130 145 150 130'}
             stroke={white} strokeWidth="2" strokeLinecap="round" fill="none"
-            initial={{ pathLength: 0 }} animate={{ pathLength: 1 }}
-            transition={{ duration: 0.7, ease: [0.65, 0, 0.35, 1] }} />
+            initial={{ pathLength: reduceMotion ? 1 : 0 }} animate={{ pathLength: 1 }}
+            transition={reduceMotion ? { duration: 0 } : { duration: 0.7, ease: [0.65, 0, 0.35, 1] }} />
         )}
 
         {/* You node */}
         {hasYou && (
           <motion.g
-            initial={{ scale: 0, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}
-            transition={{ type: 'spring', stiffness: 300, damping: 15 }}
+            initial={{ scale: reduceMotion ? 1 : 0, opacity: reduceMotion ? 1 : 0 }} animate={{ scale: 1, opacity: 1 }}
+            transition={reduceMotion ? { duration: 0 } : { type: 'spring', stiffness: 300, damping: 15 }}
             style={{ transformOrigin: '100px 145px' }}>
             <circle cx="100" cy="145" r="14" fill={amber} />
             <circle cx="100" cy="145" r="14" fill="url(#ob-amber-grad)" />
@@ -83,8 +84,8 @@ function MiniTreePreview({ step, data }: { step: number; data: OnboardingState }
         {/* Parent node */}
         {hasParent && (
           <motion.g
-            initial={{ scale: 0, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}
-            transition={{ type: 'spring', stiffness: 280, damping: 15, delay: 0.2 }}
+            initial={{ scale: reduceMotion ? 1 : 0, opacity: reduceMotion ? 1 : 0 }} animate={{ scale: 1, opacity: 1 }}
+            transition={reduceMotion ? { duration: 0 } : { type: 'spring', stiffness: 280, damping: 15, delay: 0.2 }}
             style={{
               transformOrigin: data.parentType === 'mother' ? '50px 125px' : '150px 125px',
             }}>
@@ -153,6 +154,7 @@ function MiniTreePreview({ step, data }: { step: number; data: OnboardingState }
 // ── Onboarding page ───────────────────────────────────────────────────────────
 export default function OnboardingPage() {
   const router = useRouter();
+  const reduceMotion = useReducedMotion();
   const [step, setStep]   = useState(0);
   const [data, setData]   = useState<OnboardingState>({
     yourName: '', birthYear: '', birthPlace: '',
@@ -247,9 +249,9 @@ export default function OnboardingPage() {
 
           <AnimatePresence mode="wait">
             <motion.div key={step}
-              initial={{ opacity: 0, x: 16 }}
+              initial={{ opacity: 0, x: reduceMotion ? 0 : 16 }}
               animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -16 }}
+              exit={{ opacity: 0, x: reduceMotion ? 0 : -16 }}
               transition={{ duration: 0.3, ease: [0.33, 1, 0.68, 1] }}
               className="onboarding-step">
 
