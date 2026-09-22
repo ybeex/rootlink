@@ -209,9 +209,9 @@ export default function MediaPage() {
             const Icon = MEDIA_TYPE_ICONS[asset.type] ?? ImageIcon;
             return (
               <motion.div key={asset.id}
-                initial={{ opacity: 0, scale: 0.95 }}
+                initial={{ opacity: 0, scale: reduceMotion ? 1 : 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: i * 0.02 }}>
+                transition={{ delay: reduceMotion ? 0 : i * 0.02 }}>
                 <button onClick={() => setLightbox(asset)}
                   className="group relative aspect-square w-full overflow-hidden rounded-xl transition-all"
                   style={{ background: 'var(--bg-subtle)' }}>

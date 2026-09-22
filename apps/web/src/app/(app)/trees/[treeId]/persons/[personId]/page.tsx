@@ -7,7 +7,7 @@ import {
   ChevronLeft, Pencil, Calendar, MapPin, BookOpen,
   Camera, Star, Clock, Lightbulb, Zap, Loader2, Route, Search,
 } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { motion, useReducedMotion } from 'framer-motion';
 import { toast } from 'sonner';
 import { api, ApiClientError } from '../../../../../../lib/api-client';
 import { formatPartialDate, getDisplayName } from '@rootlink/shared';
@@ -21,6 +21,7 @@ interface Props {
 }
 
 export default function PersonDetailPage({ params }: Props) {
+  const reduceMotion = useReducedMotion();
   const { treeId, personId } = use(params);
   const router               = useRouter();
   const queryClient          = useQueryClient();
@@ -109,7 +110,7 @@ export default function PersonDetailPage({ params }: Props) {
 
       {/* Profile header */}
       <motion.div
-        initial={{ opacity: 0, y: 12 }}
+        initial={{ opacity: 0, y: reduceMotion ? 0 : 12 }}
         animate={{ opacity: 1, y: 0 }}
         className="mb-8 flex items-start gap-5">
         {/* Avatar */}
@@ -279,7 +280,7 @@ export default function PersonDetailPage({ params }: Props) {
             person.events.map((event) => (
               <motion.div
                 key={event.id}
-                initial={{ opacity: 0, x: -8 }}
+                initial={{ opacity: 0, x: reduceMotion ? 0 : -8 }}
                 animate={{ opacity: 1, x: 0 }}
                 className="flex gap-4 rounded-xl p-4"
                 style={{ background: 'var(--bg-surface)', border: '1px solid var(--border-default)' }}>

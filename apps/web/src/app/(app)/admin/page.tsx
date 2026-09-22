@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useQuery } from '@tanstack/react-query';
-import { motion } from 'framer-motion';
+import { motion, useReducedMotion } from 'framer-motion';
 import dynamic from 'next/dynamic';
 import { ChevronRight } from 'lucide-react';
 import { api } from '../../../lib/api-client';
@@ -42,6 +42,7 @@ function formatBytes(bytes: number): string {
 function n(v: number) { return new Intl.NumberFormat().format(v); }
 
 export default function AdminOverviewPage() {
+  const reduceMotion = useReducedMotion();
   const { data: stats, isLoading, error } = useQuery<SystemStats>({
     queryKey: ['admin', 'stats'],
     queryFn:  () => api.get('/v1/admin/stats'),
@@ -76,7 +77,7 @@ export default function AdminOverviewPage() {
 
   return (
     <div className="mx-auto max-w-5xl px-8 py-8">
-      <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="mb-8">
+      <motion.div initial={{ opacity: 0, y: reduceMotion ? 0 : 8 }} animate={{ opacity: 1, y: 0 }} className="mb-8">
         <p className="text-2xs font-mono uppercase tracking-widest mb-1" style={{ color: 'var(--accent-ember)' }}>
           Live snapshot
         </p>
@@ -89,7 +90,7 @@ export default function AdminOverviewPage() {
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4 mb-6">
         {STAT_CARDS.map(({ label, value, sub, icon }, i) => (
           <motion.div key={label}
-            initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
+            initial={{ opacity: 0, y: reduceMotion ? 0 : 10 }} animate={{ opacity: 1, y: 0 }}
             transition={{ delay: i * 0.05 }}
             className="card p-5">
             <div className="mb-3 flex h-9 w-9 items-center justify-center rounded-xl"
@@ -107,7 +108,7 @@ export default function AdminOverviewPage() {
 
       <div className="grid lg:grid-cols-3 gap-5 mb-6">
         {/* Tier breakdown donut */}
-        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
+        <motion.div initial={{ opacity: 0, y: reduceMotion ? 0 : 10 }} animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }} className="card p-5">
           <h2 className="text-sm font-semibold mb-4" style={{ color: 'var(--text-primary)' }}>
             Subscription tiers
@@ -116,7 +117,7 @@ export default function AdminOverviewPage() {
         </motion.div>
 
         {/* Verification + quick links */}
-        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
+        <motion.div initial={{ opacity: 0, y: reduceMotion ? 0 : 10 }} animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.25 }} className="lg:col-span-2 card p-5">
           <h2 className="text-sm font-semibold mb-4" style={{ color: 'var(--text-primary)' }}>
             Email verification

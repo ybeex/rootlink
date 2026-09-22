@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import { Search, Users, BookOpen, Clock, X, ArrowRight } from 'lucide-react';
 import Link from 'next/link';
 import { TreeNavIcon } from '../../../components/brand/icons';
@@ -17,6 +17,7 @@ interface SearchResults {
 }
 
 export default function SearchPage() {
+  const reduceMotion = useReducedMotion();
   const [query, setQuery]             = useState('');
   const [recentSearches, setRecent]   = useState<string[]>([]);
   const inputRef                       = useRef<HTMLInputElement>(null);
@@ -144,7 +145,7 @@ export default function SearchPage() {
         {hasResults && (
           <motion.div
             key="results"
-            initial={{ opacity: 0, y: 8 }}
+            initial={{ opacity: 0, y: reduceMotion ? 0 : 8 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0 }}
             className="space-y-6">

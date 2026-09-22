@@ -1,6 +1,6 @@
 'use client';
 
-import { motion } from 'framer-motion';
+import { motion, useReducedMotion } from 'framer-motion';
 import Link from 'next/link';
 import { useQuery } from '@tanstack/react-query';
 import { Plus, ChevronRight, Globe, Lock, Users } from 'lucide-react';
@@ -56,9 +56,10 @@ function StatCard({
   label: string; value: string | number; sub?: string;
   trend?: string; icon: React.ReactNode;
 }) {
+  const reduceMotion = useReducedMotion();
   return (
     <motion.div
-      initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}
+      initial={{ opacity: 0, y: reduceMotion ? 0 : 12 }} animate={{ opacity: 1, y: 0 }}
       className="card p-5 flex flex-col gap-4"
     >
       <div className="flex items-center justify-between">
@@ -171,6 +172,7 @@ function TreeCard({ tree }: { tree: Tree }) {
 
 // ── Dashboard ─────────────────────────────────────────────────────────────────
 export default function DashboardPage() {
+  const reduceMotion = useReducedMotion();
   const user = useAuthStore(s => s.user);
 
   const { data: trees, isLoading } = useQuery({
@@ -201,7 +203,7 @@ export default function DashboardPage() {
 
       {/* Header */}
       <motion.div
-        initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
+        initial={{ opacity: 0, y: reduceMotion ? 0 : 8 }} animate={{ opacity: 1, y: 0 }}
         className="mb-8 flex items-end justify-between"
       >
         <div>
@@ -280,7 +282,7 @@ export default function DashboardPage() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 mb-8">
         {/* Growth area chart — 2/3 */}
         <motion.div
-          initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}
+          initial={{ opacity: 0, y: reduceMotion ? 0 : 12 }} animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
           className="card p-5 lg:col-span-2"
         >
@@ -311,7 +313,7 @@ export default function DashboardPage() {
 
         {/* Completeness donut — 1/3 */}
         <motion.div
-          initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}
+          initial={{ opacity: 0, y: reduceMotion ? 0 : 12 }} animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
           className="card p-5"
         >
@@ -362,7 +364,7 @@ export default function DashboardPage() {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {trees?.map((tree, i) => (
               <motion.div key={tree.id}
-                initial={{ opacity: 0, y: 12 }}
+                initial={{ opacity: 0, y: reduceMotion ? 0 : 12 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.05 * i }}>
                 <TreeCard tree={tree} />

@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { motion } from 'framer-motion';
+import { motion, useReducedMotion } from 'framer-motion';
 import { Search, Users, SlidersHorizontal, ChevronRight } from 'lucide-react';
 import Link from 'next/link';
 import { api } from '../../../lib/api-client';
@@ -12,6 +12,7 @@ import type { PersonSummary, Tree, PaginatedResponse } from '@rootlink/shared';
 interface TreeWithRole extends Tree { role: string }
 
 export default function PeoplePage() {
+  const reduceMotion = useReducedMotion();
   const [search, setSearch]   = useState('');
   const [treeFilter, setTreeFilter] = useState<string>('');
   const [page, setPage]       = useState(1);
@@ -107,9 +108,9 @@ export default function PeoplePage() {
             {persons.map((person, i) => (
               <motion.div
                 key={person.id}
-                initial={{ opacity: 0, y: 8 }}
+                initial={{ opacity: 0, y: reduceMotion ? 0 : 8 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: i * 0.03 }}>
+                transition={{ delay: reduceMotion ? 0 : i * 0.03 }}>
                 <Link href={`/trees/${treeId}?person=${person.id}`}>
                   <article
                     className="group rounded-xl p-4 transition-all"
