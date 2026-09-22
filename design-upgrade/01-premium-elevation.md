@@ -49,22 +49,23 @@ element") and risk looking busy rather than premium. So this pass targeted two
   Worth doing, but as its own verified pass — not bundled in here as a guess.
 - **`useReducedMotion()` on every other Framer Motion usage in the app** —
   ~~real gap, same class of fix as `PageTransition`, but dozens of call
-  sites; fixing the highest-traffic one now and the rest as a follow-up is
-  more honest than claiming a sweep that didn't happen.~~ **Update:**
-  extended to all 7 modal/panel components (`InviteMemberModal`,
-  `GedcomPanel`, `HintsPanel`, `ShareTreeModal`, `AddRelationshipModal`,
-  `RelationshipFinderModal`, `NotificationsPanel`) in a follow-up pass —
-  same minimal initial/exit-only pattern as `PageTransition`. While in
-  `NotificationsPanel` for that fix, found the earlier token sweep had a
-  real blind spot: it only matched hex literals, missing the same colors
-  expressed as decimal `rgba()` — 5 more `--danger-soft` duplicates and 8
-  more sex-indicator-soft duplicates (2 new tokens added:
-  `--sex-male-soft`, `--sex-female-soft`) found and swept. Still not done:
-  `PersonPanel.tsx` (`motion.aside`) and the 9 page-level entrance
-  animations (`dashboard`, `search`, `media`, `dna`, `people`, `onboarding`,
-  `admin`, the person detail page, and one more) — lower urgency since
-  these are simpler opacity/y fades rather than the modal pattern's more
-  pronounced scale+slide, but genuinely not yet done.
+  sites~~ **Update: completed.** Extended across three follow-up passes to
+  every remaining Framer Motion transform animation in the app — the 7
+  modal/panel components, the modal-class animations embedded directly in
+  page files (`media.tsx`'s lightbox, `dna/page.tsx`'s disclosure panel,
+  `onboarding/page.tsx`'s SVG draw-in sequence), `PersonPanel.tsx`'s
+  slide-in, and the remaining minor entrance fades across `admin`,
+  `search`, `dashboard`, `people`, and the person detail page. Stagger
+  delays (`delay: i * 0.02/0.03`) are also zeroed under reduced motion, not
+  just the transform values — a reduced-motion user shouldn't wait through
+  a staggered reveal for content that isn't visibly moving anyway.
+  Verified exhaustively via a full-codebase grep across every `initial`/
+  `exit` prop touching `y`/`x`/`scale`/`pathLength`: zero unguarded
+  instances remain in `apps/web/src`. `HeroTree.tsx` (the only animated
+  component not using Framer Motion) was checked separately and already
+  correctly handles this via `matchMedia` directly.
+  While extending this to `NotificationsPanel`, also found and fixed a real
+  blind spot in the earlier token sweep (see below).
 - **Icon tactile feedback, skeleton loaders, scroll-driven reveals** — the
   skill's other pillars. Not applied broadly this pass; the app's existing
   loading states already use skeletons in most places already inspected this
