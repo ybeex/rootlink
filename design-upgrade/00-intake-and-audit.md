@@ -55,5 +55,13 @@ Static inventory covered all 167 files under `apps/web/src`. Targeted manual rea
 1. ~~Confirm scope~~ — resolved: audit-and-tighten, keep the existing thesis.
 2. ~~Sex-color convention~~ — resolved: keep blue/pink, tokenize it.
 
-Deferred, not attempted this pass (flagged, not silently dropped): the icon system's repeated raw-hex gradient stops (Finding 1 — real, but a larger, riskier refactor across 90+ icon definitions that deserves its own pass with render-and-verify checks, not bundled into this one); radius-scale reconciliation; a formal motion-duration scale; spacing-grid cleanup; tokenizing the per-instance button hover/active shadows.
+Deferred, not attempted this pass (flagged, not silently dropped): radius-scale reconciliation; a formal motion-duration scale; spacing-grid cleanup; tokenizing the per-instance button hover/active shadows.
+
+## Finding 1, revisited (follow-up session)
+
+Came back to this one since verification tooling (a cairosvg render pipeline, built for an unrelated logo task) made it tractable. The original premise turned out to be wrong: the feature icons are not duplicate gradients repeating themselves — `fi-vault-front`'s dark forest tones and `fi-doc-front`'s pale paper tones are genuinely, intentionally different per-icon designs. There was no "shared defs" consolidation to be had.
+
+The real, narrower opportunity: ~8 distinct hex values in `icons/index.tsx` happened to exactly match existing `:root` token values. Substituting those makes previously theme-static icons become theme-reactive — a real visual behavior change, not a no-op refactor, so this was surfaced as a decision rather than made silently. Product decision: tokenize.
+
+Executed carefully — matched only against verified `:root` values (excluding 3 values that only coincidentally matched *dark-mode-only* overrides, which would have changed light-mode appearance too), then rendered all 7 affected icons in both light and dark resolved values before calling it done. That verification caught a real problem: `--border-default`'s dark value is tuned for a border on a raised surface, not line art sitting directly on the page's darkest background with nothing behind it — which is exactly how `EmptyState`'s illustrations render (confirmed by reading the component, not assumed). The connecting-line stroke in `EmptyPeopleIllustration` went nearly invisible in dark mode. Reverted that one substitution (10 occurrences, all within the 3 illustrations), kept the other 7 (34 occurrences) which verified correctly in both modes.
 
