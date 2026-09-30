@@ -164,20 +164,20 @@ export function VaultFeatureIcon({ size = 56, className }: FeatureIconProps) {
     <svg width={size} height={size} viewBox="0 0 56 56" fill="none" className={className}>
       <defs>
         <linearGradient id="fi-vault-top" x1="0" y1="1" x2="1" y2="0">
-          <stop offset="0%" stopColor="#4A8A78" />
+          <stop offset="0%" stopColor="var(--accent-leaf)" />
           <stop offset="100%" stopColor="#3E8A75" />
         </linearGradient>
         <linearGradient id="fi-vault-front" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="#2D6455" />
-          <stop offset="100%" stopColor="#1E4037" />
+          <stop offset="0%" stopColor="var(--accent-canopy)" />
+          <stop offset="100%" stopColor="var(--accent-grove)" />
         </linearGradient>
         <linearGradient id="fi-vault-right" x1="0" y1="0" x2="1" y2="0">
-          <stop offset="0%" stopColor="#152F28" />
+          <stop offset="0%" stopColor="var(--accent-primary)" />
           <stop offset="100%" stopColor="#0D2118" />
         </linearGradient>
         <linearGradient id="fi-vault-amber" x1="0" y1="0" x2="1" y2="1">
           <stop offset="0%" stopColor="#F2A747" />
-          <stop offset="100%" stopColor="#C97B2F" />
+          <stop offset="100%" stopColor="var(--accent-ember)" />
         </linearGradient>
         <filter id="fi-vault-shadow">
           <feDropShadow dx="0" dy="3" stdDeviation="4" floodColor="#091810" floodOpacity="0.35" />
@@ -217,16 +217,16 @@ export function CollabFeatureIcon({ size = 56, className }: FeatureIconProps) {
       <defs>
         <radialGradient id="fi-person-a" cx="35%" cy="35%" r="65%">
           <stop offset="0%" stopColor="#5DA090" />
-          <stop offset="100%" stopColor="#1E4037" />
+          <stop offset="100%" stopColor="var(--accent-grove)" />
         </radialGradient>
         <radialGradient id="fi-person-b" cx="35%" cy="35%" r="65%">
           <stop offset="0%" stopColor="#F2A747" />
-          <stop offset="100%" stopColor="#C97B2F" />
+          <stop offset="100%" stopColor="var(--accent-ember)" />
         </radialGradient>
         <linearGradient id="fi-thread" x1="0" y1="0" x2="1" y2="0">
-          <stop offset="0%" stopColor="#4A8A78" />
-          <stop offset="50%" stopColor="#C97B2F" />
-          <stop offset="100%" stopColor="#4A8A78" />
+          <stop offset="0%" stopColor="var(--accent-leaf)" />
+          <stop offset="50%" stopColor="var(--accent-ember)" />
+          <stop offset="100%" stopColor="var(--accent-leaf)" />
         </linearGradient>
         <filter id="fi-collab-shadow">
           <feDropShadow dx="0" dy="3" stdDeviation="4" floodColor="#091810" floodOpacity="0.3" />
@@ -246,7 +246,7 @@ export function CollabFeatureIcon({ size = 56, className }: FeatureIconProps) {
         <circle cx="10.5" cy="11.5" r="2" fill="rgba(255,255,255,0.35)" />
         <circle cx="40.5" cy="11.5" r="2" fill="rgba(255,255,255,0.35)" />
         {/* Connection node at midpoint */}
-        <circle cx="28" cy="15.5" r="3" fill="#C97B2F" opacity="0.9" />
+        <circle cx="28" cy="15.5" r="3" fill="var(--accent-ember)" opacity="0.9" />
       </g>
     </svg>
   );
@@ -259,11 +259,11 @@ export function AIFeatureIcon({ size = 56, className }: FeatureIconProps) {
       <defs>
         <linearGradient id="fi-ai-glass" x1="0" y1="0" x2="1" y2="1">
           <stop offset="0%" stopColor="#3E8A75" />
-          <stop offset="100%" stopColor="#152F28" />
+          <stop offset="100%" stopColor="var(--accent-primary)" />
         </linearGradient>
         <linearGradient id="fi-ai-branch" x1="0" y1="1" x2="1" y2="0">
-          <stop offset="0%" stopColor="#2D6455" />
-          <stop offset="100%" stopColor="#4A8A78" />
+          <stop offset="0%" stopColor="var(--accent-canopy)" />
+          <stop offset="100%" stopColor="var(--accent-leaf)" />
         </linearGradient>
         <filter id="fi-ai-shadow">
           <feDropShadow dx="0" dy="3" stdDeviation="4" floodColor="#091810" floodOpacity="0.3" />
@@ -276,8 +276,8 @@ export function AIFeatureIcon({ size = 56, className }: FeatureIconProps) {
         <path d="M14 38 Q20 32 28 30" stroke="url(#fi-ai-branch)" strokeWidth="3"
           strokeLinecap="round" />
         {/* Node on branch */}
-        <circle cx="24" cy="20" r="4" fill="#C97B2F" />
-        <circle cx="28" cy="30" r="3.5" fill="#2D6455" />
+        <circle cx="24" cy="20" r="4" fill="var(--accent-ember)" />
+        <circle cx="28" cy="30" r="3.5" fill="var(--accent-canopy)" />
         {/* Magnifier */}
         <circle cx="36" cy="24" r="12" stroke="url(#fi-ai-glass)" strokeWidth="3"
           fill="rgba(45,100,85,0.1)" />
@@ -298,7 +298,7 @@ export function ExportFeatureIcon({ size = 56, className }: FeatureIconProps) {
       <defs>
         <linearGradient id="fi-doc-top" x1="0" y1="1" x2="1" y2="0">
           <stop offset="0%" stopColor="#5DA090" />
-          <stop offset="100%" stopColor="#4A8A78" />
+          <stop offset="100%" stopColor="var(--accent-leaf)" />
         </linearGradient>
         <linearGradient id="fi-doc-front" x1="0" y1="0" x2="0" y2="1">
           <stop offset="0%" stopColor="#EFF7F4" />
@@ -320,17 +320,17 @@ export function ExportFeatureIcon({ size = 56, className }: FeatureIconProps) {
         {/* Page front */}
         <rect x="6" y="11" width="34" height="39" rx="2" fill="url(#fi-doc-front)" />
         {/* Folded corner */}
-        <polygon points="34,11 40,11 40,17" fill="#A3C0B8" />
+        <polygon points="34,11 40,11 40,17" fill="var(--border-strong)" />
         {/* Mini tree watermark on page */}
-        <path d="M23 44 L23 36 Q23 30 28 28" stroke="#2D6455" strokeWidth="1.5"
+        <path d="M23 44 L23 36 Q23 30 28 28" stroke="var(--accent-canopy)" strokeWidth="1.5"
           strokeLinecap="round" opacity="0.4" />
-        <path d="M23 40 Q26 36 29 34" stroke="#2D6455" strokeWidth="1.25"
+        <path d="M23 40 Q26 36 29 34" stroke="var(--accent-canopy)" strokeWidth="1.25"
           strokeLinecap="round" opacity="0.4" />
-        <circle cx="28" cy="27" r="2.5" fill="#C97B2F" opacity="0.5" />
+        <circle cx="28" cy="27" r="2.5" fill="var(--accent-ember)" opacity="0.5" />
         {/* Lines of text */}
-        <rect x="10" y="17" width="18" height="2" rx="1" fill="#2D6455" opacity="0.3" />
-        <rect x="10" y="22" width="14" height="2" rx="1" fill="#2D6455" opacity="0.2" />
-        <rect x="10" y="27" width="20" height="2" rx="1" fill="#2D6455" opacity="0.2" />
+        <rect x="10" y="17" width="18" height="2" rx="1" fill="var(--accent-canopy)" opacity="0.3" />
+        <rect x="10" y="22" width="14" height="2" rx="1" fill="var(--accent-canopy)" opacity="0.2" />
+        <rect x="10" y="27" width="20" height="2" rx="1" fill="var(--accent-canopy)" opacity="0.2" />
         {/* Top highlight */}
         <line x1="6" y1="11" x2="34" y2="11" stroke="rgba(255,255,255,0.6)" strokeWidth="0.75" />
       </g>
@@ -348,12 +348,12 @@ export function EmptySeedlingIllustration({ size = 120 }: { size?: number }) {
     <svg width={size} height={size} viewBox="0 0 120 120" fill="none">
       <defs>
         <radialGradient id="es-soil" cx="50%" cy="100%" r="60%">
-          <stop offset="0%" stopColor="#C97B2F" stopOpacity="0.3" />
-          <stop offset="100%" stopColor="#C97B2F" stopOpacity="0" />
+          <stop offset="0%" stopColor="var(--accent-ember)" stopOpacity="0.3" />
+          <stop offset="100%" stopColor="var(--accent-ember)" stopOpacity="0" />
         </radialGradient>
         <radialGradient id="es-glow" cx="50%" cy="60%" r="50%">
-          <stop offset="0%" stopColor="#4A8A78" stopOpacity="0.15" />
-          <stop offset="100%" stopColor="#4A8A78" stopOpacity="0" />
+          <stop offset="0%" stopColor="var(--accent-leaf)" stopOpacity="0.15" />
+          <stop offset="100%" stopColor="var(--accent-leaf)" stopOpacity="0" />
         </radialGradient>
       </defs>
       {/* Glow */}
@@ -363,15 +363,15 @@ export function EmptySeedlingIllustration({ size = 120 }: { size?: number }) {
       {/* Ground arc */}
       <path d="M28 95 Q60 88 92 95" stroke="#D1E0DA" strokeWidth="2" fill="none" />
       {/* Stem */}
-      <path d="M60 95 L60 65" stroke="#2D6455" strokeWidth="3" strokeLinecap="round" />
+      <path d="M60 95 L60 65" stroke="var(--accent-canopy)" strokeWidth="3" strokeLinecap="round" />
       {/* Left leaf */}
       <path d="M60 72 Q50 65 46 58 Q55 60 60 68 Z"
         fill="#3E8A75" opacity="0.9" />
       {/* Right leaf */}
       <path d="M60 78 Q72 72 76 64 Q67 68 60 76 Z"
-        fill="#2D6455" opacity="0.9" />
+        fill="var(--accent-canopy)" opacity="0.9" />
       {/* Tiny bud */}
-      <circle cx="60" cy="63" r="4" fill="#C97B2F" opacity="0.85" />
+      <circle cx="60" cy="63" r="4" fill="var(--accent-ember)" opacity="0.85" />
       <circle cx="58.5" cy="61.5" r="1.2" fill="rgba(255,255,255,0.4)" />
       {/* Ambient dots */}
       <circle cx="34" cy="72" r="2" fill="#D1E0DA" opacity="0.6" />
@@ -417,7 +417,7 @@ export function EmptyMediaIllustration({ size = 120 }: { size?: number }) {
       <path d="M32 82 L50 55 L62 70 L74 48 L88 82 Z"
         fill="#EFF7F4" stroke="#D1E0DA" strokeWidth="1" />
       {/* Sun */}
-      <circle cx="72" cy="42" r="6" fill="#FAF0E0" stroke="#E4DDD0" strokeWidth="1" />
+      <circle cx="72" cy="42" r="6" fill="var(--accent-ember-soft)" stroke="#E4DDD0" strokeWidth="1" />
       {/* Mount indicator */}
       <circle cx="45" cy="62" r="3" fill="#D1E0DA" />
       {/* Corner mounts */}
@@ -430,8 +430,8 @@ export function EmptyMediaIllustration({ size = 120 }: { size?: number }) {
       <path d="M90,88 L90,85 L87,85" stroke="#B0D8CC" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
       {/* Plus */}
       <circle cx="60" cy="60" r="14" fill="rgba(45,100,85,0.06)" stroke="#B0D8CC" strokeWidth="1.5" />
-      <line x1="55" y1="60" x2="65" y2="60" stroke="#4A8A78" strokeWidth="2" strokeLinecap="round" />
-      <line x1="60" y1="55" x2="60" y2="65" stroke="#4A8A78" strokeWidth="2" strokeLinecap="round" />
+      <line x1="55" y1="60" x2="65" y2="60" stroke="var(--accent-leaf)" strokeWidth="2" strokeLinecap="round" />
+      <line x1="60" y1="55" x2="60" y2="65" stroke="var(--accent-leaf)" strokeWidth="2" strokeLinecap="round" />
     </svg>
   );
 }
