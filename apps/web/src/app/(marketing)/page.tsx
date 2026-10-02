@@ -221,6 +221,9 @@ export default function LandingPage() {
             {BLOG_POSTS.slice(0, 3).map(post => (
               <Link key={post.slug} href={`/blog/${post.slug}`}
                 className="group card card-lift p-5 flex flex-col gap-3">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={post.image} alt="" className="-mx-5 -mt-5 mb-1 rounded-t-2xl"
+                  style={{ aspectRatio: '1200 / 630', objectFit: 'cover' }} />
                 <span className="text-2xs font-mono uppercase tracking-wider px-2 py-0.5 rounded-full w-fit"
                   style={{ background: 'var(--accent-ember-soft)', color: 'var(--accent-ember)' }}>
                   {post.category}
@@ -334,23 +337,27 @@ const BLOG_POSTS = [
     title: 'How to start a family tree when you don\'t know where to begin',
     excerpt: 'The most common mistake is waiting until you have complete information. You never will. Start with yourself and let the gaps guide you.',
     category: 'How-To',
+    image: '/blog/how-to-start.webp',
   },
   {
     slug: 'privacy-problem',
     title: 'The privacy problem with genealogy software nobody talks about',
     excerpt: 'Most tools assume your living relatives agreed to be in a database. They didn\'t. Here\'s how we think about that.',
     category: 'Thinking',
+    image: '/blog/privacy-problem.webp',
   },
   {
     slug: 'ai-hints-approach',
     title: 'We rebuilt how AI hints work. Here\'s why the old approach was wrong.',
     excerpt: 'Generating research suggestions from outside records sounds helpful. It produces hallucinations. Our new approach never leaves your own data.',
     category: 'Product',
+    image: '/blog/ai-hints-approach.webp',
   },
   {
     slug: 'three-generations',
     title: 'Three generations in an afternoon: a practical method',
     excerpt: 'You can build a meaningful tree in a few hours with the right approach. The trick is knowing what information to skip for now.',
     category: 'How-To',
+    image: '/blog/three-generations.webp',
   },
 ];
