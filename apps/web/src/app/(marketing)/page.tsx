@@ -1,37 +1,7 @@
 import Link from 'next/link';
 import { ArrowRight, ChevronRight } from 'lucide-react';
-import dynamic from 'next/dynamic';
 import { RootLinkLogo } from '../../components/brand/Logo';
 import { LandingAuthRedirect } from '../../components/marketing/LandingAuthRedirect';
-
-// HeroTree uses requestAnimationFrame sequencing and window.matchMedia —
-// must be client-only. The placeholder height prevents layout shift
-// while the animation chunk loads.
-const HeroTree = dynamic(
-  () => import('../../components/marketing/HeroTree').then(m => ({ default: m.HeroTree })),
-  {
-    ssr: false,
-    loading: () => (
-      <div
-        style={{ height: 280 }}
-        className="flex items-center justify-center"
-        aria-hidden="true"
-      >
-        <svg width={80} height={60} viewBox="0 0 80 60" fill="none" className="animate-pulse">
-          <line x1="40" y1="58" x2="40" y2="38"
-            stroke="rgba(255,255,255,0.25)" strokeWidth="3" strokeLinecap="round" />
-          <path d="M40 46 Q26 36 16 26"
-            stroke="rgba(255,255,255,0.2)" strokeWidth="2.5" strokeLinecap="round" fill="none" />
-          <path d="M40 46 Q54 36 64 26"
-            stroke="rgba(255,255,255,0.2)" strokeWidth="2.5" strokeLinecap="round" fill="none" />
-          <circle cx="40" cy="22" r="8" fill="rgba(201,123,47,0.3)" />
-          <circle cx="14" cy="22" r="6" fill="rgba(255,255,255,0.2)" />
-          <circle cx="66" cy="22" r="6" fill="rgba(255,255,255,0.2)" />
-        </svg>
-      </div>
-    ),
-  }
-);
 
 // ── Landing page ─────────────────────────────────────────────────────────────
 //
@@ -46,7 +16,14 @@ export default function LandingPage() {
       <LandingAuthRedirect />
 
       {/* ── HERO — Grove mode ──────────────────────────────────────────── */}
-      <section className="hero-bg min-h-screen flex flex-col">
+      <section className="hero-bg min-h-screen flex flex-col" style={{ background: '#06170f' }}>
+        {/* Hero artwork: tree sits right on desktop; dimmed behind the text on small screens */}
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src="/hero-tree.webp" alt="" aria-hidden="true" fetchPriority="high"
+          className="absolute inset-0 z-0 h-full w-full object-cover opacity-45 lg:opacity-100"
+          style={{ objectPosition: '75% center' }} />
+        <div aria-hidden="true" className="absolute inset-0 z-0 lg:hidden"
+          style={{ background: 'linear-gradient(180deg, rgba(6,23,15,0.55), rgba(6,23,15,0.85))' }} />
         {/* Nav */}
         <nav className="flex items-center justify-between px-8 py-5 relative z-10">
           <RootLinkLogo size="md" inverted />
@@ -78,7 +55,7 @@ export default function LandingPage() {
         </nav>
 
         {/* Hero content */}
-        <div className="flex-1 flex flex-col items-center justify-center px-6 pt-8 pb-20 relative z-10 text-center">
+        <div className="flex-1 flex flex-col items-center lg:items-start justify-center px-6 lg:pl-16 xl:pl-24 pt-8 pb-20 relative z-10 text-center lg:text-left w-full max-w-3xl mx-auto lg:mx-0 lg:max-w-[42rem]">
           {/* Y-Combinator / trust signal */}
           <div className="mb-8 inline-flex items-center gap-2 rounded-full border px-3 py-1.5"
             style={{ borderColor: 'rgba(255,255,255,0.12)', background: 'rgba(255,255,255,0.06)' }}>
@@ -89,7 +66,7 @@ export default function LandingPage() {
           </div>
 
           {/* Headline */}
-          <h1 className="font-display text-5xl sm:text-6xl lg:text-7xl font-bold text-balance"
+          <h1 className="font-display text-5xl sm:text-6xl font-bold text-balance"
             style={{ color: '#FFFFFF', lineHeight: 1.05, letterSpacing: '-0.035em' }}>
             Your family&rsquo;s story,{' '}
             <em className="not-italic" style={{ color: 'var(--accent-ember)' }}>kept whole.</em>
@@ -102,7 +79,7 @@ export default function LandingPage() {
           </p>
 
           {/* CTAs */}
-          <div className="mt-8 flex flex-wrap items-center justify-center gap-4">
+          <div className="mt-8 flex flex-wrap items-center justify-center lg:justify-start gap-4">
             <Link href="/register" className="btn btn-amber px-6 py-3 text-base gap-2">
               Start your tree
               <ArrowRight size={16} />
@@ -112,11 +89,6 @@ export default function LandingPage() {
               style={{ color: 'rgba(255,255,255,0.5)' }}>
               See how it works <ChevronRight size={14} />
             </Link>
-          </div>
-
-          {/* The hero tree — the product IS the visual */}
-          <div className="mt-16 w-full max-w-2xl mx-auto animate-slide-up delay-300">
-            <HeroTree />
           </div>
         </div>
 
