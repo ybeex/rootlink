@@ -2,7 +2,6 @@ import Link from 'next/link';
 import { ArrowRight, ChevronRight } from 'lucide-react';
 import dynamic from 'next/dynamic';
 import { RootLinkLogo } from '../../components/brand/Logo';
-import { VaultFeatureIcon, CollabFeatureIcon, AIFeatureIcon, ExportFeatureIcon } from '../../components/brand/icons';
 import { LandingAuthRedirect } from '../../components/marketing/LandingAuthRedirect';
 
 // HeroTree uses requestAnimationFrame sequencing and window.matchMedia —
@@ -156,7 +155,7 @@ export default function LandingPage() {
 
       {/* Feature 1: Privacy */}
       <FeatureSection
-        icon={<VaultFeatureIcon size={64} />}
+        image="/features/privacy.webp"
         label="Privacy first"
         headline="Living relatives are never shown by accident."
         body="Mark someone as living and they vanish from any share link you send — name, dates, photo, biography. All of it. You don't have to remember to ask; RootLink asks itself before the link ever goes out."
@@ -167,7 +166,7 @@ export default function LandingPage() {
 
       {/* Feature 2: Collaboration */}
       <FeatureSection
-        icon={<CollabFeatureIcon size={64} />}
+        image="/features/collaboration.webp"
         label="Real collaboration"
         headline="The relative with the old photographs shouldn't need to type them up."
         body="Invite anyone with a role attached. They arrive directly in the tree. You see each other's presence in real-time. Edit history lets you untangle conflicts cleanly, without a conversation about who changed what."
@@ -178,7 +177,7 @@ export default function LandingPage() {
 
       {/* Feature 3: AI Research */}
       <FeatureSection
-        icon={<AIFeatureIcon size={64} />}
+        image="/features/ai-research.webp"
         label="AI that doesn't invent"
         headline="Research hints from your own data. Not the internet."
         body="When a profile looks thin — a missing birthplace, an unexplained gap between events — RootLink flags it as something worth researching, generated entirely from the shape of your own data. No fabricated suggestions from outside records."
@@ -189,7 +188,7 @@ export default function LandingPage() {
 
       {/* Feature 4: GEDCOM */}
       <FeatureSection
-        icon={<ExportFeatureIcon size={64} />}
+        image="/features/export.webp"
         label="Your data leaves whenever you want"
         headline="GEDCOM export on every plan, including free."
         body="GEDCOM is the format every other genealogy tool reads. Export the entire tree — structure, dates, relationships, sources — and import it into anything. Your family's record isn't locked inside RootLink."
@@ -271,9 +270,9 @@ export default function LandingPage() {
 // ── Feature section component ───────────────────────────────────────────────
 
 function FeatureSection({
-  icon, label, headline, body, bullets, reverse, accent,
+  image, label, headline, body, bullets, reverse, accent,
 }: {
-  icon: React.ReactNode;
+  image: string;
   label: string;
   headline: string;
   body: string;
@@ -284,19 +283,17 @@ function FeatureSection({
   return (
     <section className="py-24" style={{ background: reverse ? 'var(--bg-subtle)' : 'var(--bg-base)' }}>
       <div className={`mx-auto max-w-5xl px-6 flex flex-col gap-12 ${reverse ? 'lg:flex-row-reverse' : 'lg:flex-row'} items-center`}>
-        {/* Icon side */}
+        {/* Image side */}
         <div className="flex-1 flex items-center justify-center">
           <div
-            className="relative flex items-center justify-center rounded-3xl p-12"
+            className="animate-float-slow w-full max-w-sm overflow-hidden rounded-3xl"
             style={{
-              background: accent === 'forest'
-                ? 'linear-gradient(135deg, var(--bg-subtle), var(--bg-muted))'
-                : 'linear-gradient(135deg, var(--accent-ember-soft), #FEF7ED)',
               border: '1px solid var(--border-default)',
               boxShadow: accent === 'forest' ? 'var(--shadow-lg)' : '0 12px 40px rgba(201,123,47,0.10)',
             }}
           >
-            <div className="animate-float-slow">{icon}</div>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={image} alt="" className="block w-full" style={{ aspectRatio: '1 / 1', objectFit: 'cover' }} />
           </div>
         </div>
 
