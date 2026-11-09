@@ -4,7 +4,7 @@ import { useState, useCallback, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useDropzone } from 'react-dropzone';
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
-import { Upload, Image as ImageIcon, FileText, Music, Video, X, Loader2, ChevronDown } from 'lucide-react';
+import { Upload, ImageIcon, FileText, Music, Video, X, Loader2, ChevronDown } from 'lucide-react';
 import { toast } from 'sonner';
 import { api, ApiClientError } from '../../../lib/api-client';
 import type { Tree, MediaAsset } from '@rootlink/shared';

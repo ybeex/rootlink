@@ -339,7 +339,7 @@ function SubscriptionSection() {
               <p className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>{t.price}</p>
               {t.id !== tier && t.id !== 'free' && (
                 <button
-                  onClick={() => { if (t.id !== 'free') checkoutMutation.mutate(t.id); }}
+                  onClick={() => checkoutMutation.mutate(t.id)}
                   disabled={checkoutMutation.isPending}
                   className="mt-1.5 rounded-lg px-3 py-1 text-xs font-medium text-white disabled:opacity-60"
                   style={{ background: 'var(--accent-ember)' }}>
@@ -480,7 +480,7 @@ function ApiKeysSection() {
         <div className="mb-5 rounded-xl p-4" style={{ background: 'var(--accent-ember-soft)' }}>
           <div className="mb-2 flex items-center justify-between">
             <p className="text-xs font-semibold" style={{ color: 'var(--accent-ember)' }}>
-              Copy this key now — it won't be shown again
+              Copy this key now — it won&apos;t be shown again
             </p>
             <button onClick={() => setRevealedKey(null)} aria-label="Dismiss">
               <X size={14} style={{ color: 'var(--accent-ember)' }} />

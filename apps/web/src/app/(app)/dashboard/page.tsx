@@ -97,7 +97,7 @@ function StatCard({
 }
 
 // ── Tree card ─────────────────────────────────────────────────────────────────
-function TreeCard({ tree }: { tree: Tree }) {
+function TreeCard({ tree }: { tree: Tree & { dataQualityScore?: number } }) {
   const privacyIcon =
     tree.privacyLevel === 'public'  ? <Globe  size={11} style={{ color: '#4A8A78' }} />
     : tree.privacyLevel === 'family' ? <Users  size={11} style={{ color: 'var(--text-muted)' }} />

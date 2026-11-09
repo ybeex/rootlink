@@ -99,6 +99,7 @@ export function FamilySearchReviewModal({ treeId, personId, hint, onClose }: Pro
       const events = person.events.map(eventInputFromEvent);
       for (const idx of checked) {
         const fact = importableFacts[idx];
+        if (!fact) continue;
         const mappedType = FACT_TYPE_MAP[fact.type] ?? 'custom';
         const existing = events.find((e) => e.type === mappedType);
         const date: PartialDate = { year: fact.year, month: null, day: null, circa: false, beforeYear: null, afterYear: null };
@@ -145,7 +146,7 @@ export function FamilySearchReviewModal({ treeId, personId, hint, onClose }: Pro
         <div className="flex items-center justify-between border-b px-5 py-4" style={{ borderColor: 'var(--border-subtle)' }}>
           <div>
             <h2 className="text-base font-semibold" style={{ color: 'var(--text-primary)' }}>Review FamilySearch match</h2>
-            <a href={hint.recordUrl} target="_blank" rel="noopener noreferrer"
+            <a href={hint.recordUrl ?? undefined} target="_blank" rel="noopener noreferrer"
               className="mt-0.5 flex items-center gap-1 text-xs underline" style={{ color: 'var(--accent-primary)' }}>
               View on FamilySearch <ExternalLink size={10} />
             </a>

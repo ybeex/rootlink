@@ -363,7 +363,7 @@ function HowThisWorksPanel({ open, onClose }: { open: boolean; onClose: () => vo
                 centimorgans (cM), the standard unit genetic genealogists use.
               </p>
               <p>
-                Shared segments are used to estimate a likely relationship (e.g. "1st–2nd cousin"),
+                Shared segments are used to estimate a likely relationship (e.g. &quot;1st–2nd cousin&quot;),
                 based on published shared-cM statistics. These are ranges, not certainties — many
                 different relationships can produce a similar amount of shared DNA.
               </p>
@@ -374,7 +374,7 @@ function HowThisWorksPanel({ open, onClose }: { open: boolean; onClose: () => vo
                 <strong>A real limitation, not a footnote:</strong> this matching does not phase your
                 DNA into maternal/paternal strands the way GEDmatch or Ancestry do. It detects
                 identical stretches directly, which is simpler but will occasionally overcall short
-                segments (typically well under 15 cM) as shared when they aren't truly inherited from
+                segments (typically well under 15 cM) as shared when they aren&apos;t truly inherited from
                 a common ancestor. Longer segments and closer relationships are much more reliable than
                 short, distant-looking ones.
               </div>

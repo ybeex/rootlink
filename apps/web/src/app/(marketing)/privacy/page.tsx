@@ -82,7 +82,7 @@ export default function PrivacyPage() {
         </Section>
 
         <Section title="How we use information">
-          <p>We use the information described above to operate the service: rendering your tree, enabling collaboration and sharing, generating thumbnails for uploaded media, sending account-related emails (verification, password resets, invitations), and computing data-quality indicators on a person's record. We do not sell personal information, and we do not use it for advertising.</p>
+          <p>We use the information described above to operate the service: rendering your tree, enabling collaboration and sharing, generating thumbnails for uploaded media, sending account-related emails (verification, password resets, invitations), and computing data-quality indicators on a person&apos;s record. We do not sell personal information, and we do not use it for advertising.</p>
         </Section>
 
         <Section title="AI-assisted features">

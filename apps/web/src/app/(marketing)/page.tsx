@@ -75,7 +75,7 @@ export default function LandingPage() {
       {/* ── STATS — Numbers as protagonists ─────────────────────────────── */}
       <section style={{ background: 'var(--bg-base)' }} className="py-16">
         <div className="mx-auto max-w-4xl px-6">
-          <div className="grid grid-cols-3 divide-x" style={{ divideColor: 'var(--border-default)' }}>
+          <div className="grid grid-cols-3 divide-x" style={{ borderColor: 'var(--border-default)' }}>
             {[
               { n: '3,200+',  label: 'families with active trees'       },
               { n: '48,000+', label: 'people recorded and growing'      },
