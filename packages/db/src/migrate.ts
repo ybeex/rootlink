@@ -8,11 +8,12 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 const DATABASE_URL = process.env['DATABASE_URL'];
 if (!DATABASE_URL) throw new Error('DATABASE_URL is required');
+const databaseUrl: string = DATABASE_URL;
 
 async function runMigrations() {
   console.log('Running database migrations...');
 
-  const sql = postgres(DATABASE_URL, { max: 1 });
+  const sql = postgres(databaseUrl, { max: 1 });
   const db  = drizzle(sql);
 
   await migrate(db, {
