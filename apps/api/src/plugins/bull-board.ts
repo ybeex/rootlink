@@ -1,6 +1,6 @@
 import type { FastifyInstance } from 'fastify';
 import { createBullBoard } from '@bull-board/api';
-import { BullMQAdapter } from '@bull-board/api/bullMQAdapter.js';
+import { BullMQAdapter } from '@bull-board/api/bullMQAdapter';
 import { FastifyAdapter } from '@bull-board/fastify';
 import { allQueues } from '../workers/queues.js';
 import { requireAdmin } from '../middleware/auth.js';

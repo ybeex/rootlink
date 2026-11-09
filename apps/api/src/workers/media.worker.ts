@@ -5,7 +5,7 @@ import {
   GetObjectCommand,
   PutObjectCommand,
 } from '@aws-sdk/client-s3';
-import { getRedis } from '../lib/redis.js';
+import { getWorkerRedis } from '../lib/redis.js';
 import { getDb, mediaAssets } from '@rootlink/db';
 import { eq } from 'drizzle-orm';
 import { QUEUE_NAMES, THUMBNAIL_SIZES } from '@rootlink/shared';
@@ -124,7 +124,7 @@ export function startMediaWorker() {
       job.log(`Asset ${assetId} processing complete`);
     },
     {
-      connection: getRedis(),
+      connection: getWorkerRedis(),
       concurrency: 5,
     },
   );
