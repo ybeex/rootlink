@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import {
-  GitBranch, Users2, Image as ImageIcon, BookOpen, FileDown, Sparkles,
+  GitBranch, Users2, ImageIcon, BookOpen, FileDown, Sparkles,
   History, KeyRound, ArrowRight, ScanSearch,
 } from 'lucide-react';
 
@@ -33,6 +33,7 @@ export default function FeaturesPage() {
       <FeatureBlock
         icon={GitBranch}
         eyebrow="Visualization"
+        image="/features-page/visualization.webp"
         title="See the tree the way you're thinking about it"
         body="A pedigree chart for tracing ancestors backward, a descendant chart for following one person's line forward, and a fan chart for seeing several generations at once. Switch between them without losing your place — the underlying data is the same, only the shape changes."
         points={[
@@ -46,6 +47,7 @@ export default function FeaturesPage() {
       <FeatureBlock
         icon={Users2}
         eyebrow="Collaboration"
+        image="/features-page/collaboration.webp"
         reverse
         title="A tree more than one person can work on"
         body="Invite relatives with the role that fits them — a viewer who just wants to look, a contributor who can add what they know, an editor or admin who helps maintain it. You'll see who else has the tree open while you're working."
@@ -60,6 +62,7 @@ export default function FeaturesPage() {
       <FeatureBlock
         icon={History}
         eyebrow="Edit history"
+        image="/features-page/edit-history.webp"
         title="Nothing gets overwritten by accident"
         body="Every change to a person is recorded — who changed it, what it was before, and when. If a well-meaning edit turns out to be wrong, restoring the previous version takes one click, not a re-entry of everything that was lost."
         points={[
@@ -73,6 +76,7 @@ export default function FeaturesPage() {
       <FeatureBlock
         icon={ImageIcon}
         eyebrow="Photos & documents"
+        image="/features-page/media.webp"
         reverse
         title="The paper trail, attached to the people in it"
         body="Upload a photograph, a certificate, a scanned letter — attach it directly to the person or the event it documents, instead of leaving it in a folder disconnected from the tree it's evidence for."
@@ -87,6 +91,7 @@ export default function FeaturesPage() {
       <FeatureBlock
         icon={BookOpen}
         eyebrow="Source citations"
+        image="/features-page/sources.webp"
         title="Where a fact came from matters as much as the fact"
         body="Attach a proper citation to a vital event — a census record, a parish register, a family bible — with a confidence level, so anyone looking at the tree later can tell a well-documented fact from a family rumor."
         points={[
@@ -99,6 +104,7 @@ export default function FeaturesPage() {
       <FeatureBlock
         icon={Sparkles}
         eyebrow="AI assistance"
+        image="/features-page/ai-assistance.webp"
         reverse
         title="A starting point, not a substitute for research"
         body="Generate a first-draft biography from the facts already in a person's record — useful for turning a list of dates into something readable. Research prompts work the same way: they're AI-generated suggestions based on patterns in your own tree, not matches against historical archives, and we'd rather say that plainly than let the word \u2018hint\u2019 imply more than it does."
@@ -113,6 +119,7 @@ export default function FeaturesPage() {
       <FeatureBlock
         icon={FileDown}
         eyebrow="Import & export"
+        image="/features-page/gedcom.webp"
         title="Your tree was never only ours to keep"
         body="Bring in years of existing research from another program via a standard GEDCOM file, or export your RootLink tree the same way at any time. No format lock-in either direction."
         points={[
@@ -161,13 +168,14 @@ export default function FeaturesPage() {
 }
 
 function FeatureBlock({
-  icon: Icon, eyebrow, title, body, points, reverse = false,
+  icon: Icon, eyebrow, title, body, points, image, reverse = false,
 }: {
   icon: React.ComponentType<{ size?: number }>;
   eyebrow: string;
   title: string;
   body: string;
   points: string[];
+  image: string;
   reverse?: boolean;
 }) {
   return (
@@ -197,10 +205,12 @@ function FeatureBlock({
         </div>
 
         <div
-          className={`flex aspect-[4/3] items-center justify-center rounded-3xl ${reverse ? 'md:order-1' : 'md:order-2'}`}
-          style={{ background: 'var(--bg-subtle)', color: 'var(--border-strong)' }}
+          className={`overflow-hidden rounded-3xl ${reverse ? 'md:order-1' : 'md:order-2'}`}
+          style={{ border: '1px solid var(--border-default)', boxShadow: 'var(--shadow-md)' }}
         >
-          <Icon size={64} />
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={image} alt="" loading="lazy" decoding="async"
+            className="block w-full" style={{ aspectRatio: '4 / 3', objectFit: 'cover' }} />
         </div>
       </div>
     </section>

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import { ArrowRight, ChevronLeft } from 'lucide-react';
@@ -76,7 +76,7 @@ function MiniTreePreview({ step, data }: { step: number; data: OnboardingState }
             <text x="100" y="178" textAnchor="middle"
               fontFamily="var(--font-mono)" fontSize="10" fill={amberLight}
               letterSpacing="0.05em">
-              {data.yourName.split(' ')[0].slice(0, 10).toUpperCase() || 'YOU'}
+              {data.yourName.split(' ')[0]?.slice(0, 10).toUpperCase() || 'YOU'}
             </text>
           </motion.g>
         )}
@@ -100,7 +100,7 @@ function MiniTreePreview({ step, data }: { step: number; data: OnboardingState }
               textAnchor="middle"
               fontFamily="var(--font-mono)" fontSize="9"
               fill="rgba(255,255,255,0.55)" letterSpacing="0.04em">
-              {data.parentName.split(' ')[0].slice(0, 8).toUpperCase()}
+              {data.parentName.split(' ')[0]?.slice(0, 8).toUpperCase()}
             </text>
           </motion.g>
         )}

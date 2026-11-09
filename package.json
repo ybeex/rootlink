@@ -2,6 +2,7 @@
   "name": "rootlink",
   "version": "1.0.0",
   "private": true,
+  "packageManager": "npm@11.17.0",
   "description": "RootLink \u2014 Next-Generation Family Tree & Heritage Platform",
   "workspaces": [
     "apps/*",

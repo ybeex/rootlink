@@ -4,7 +4,7 @@ import { useParams, useSearchParams, useRouter } from 'next/navigation';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { GitMerge, ArrowRight, Loader2, ChevronLeft } from 'lucide-react';
 import { toast } from 'sonner';
-import { api, ApiClientError } from '../../../../lib/api-client';
+import { api, ApiClientError } from '@/lib/api-client';
 import type { MergePreview } from '@rootlink/shared';
 
 export default function MergePersonsPage() {

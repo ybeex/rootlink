@@ -1,7 +1,7 @@
 import { Worker } from 'bullmq';
 import { createTransport } from 'nodemailer';
 import type { Transporter } from 'nodemailer';
-import { getRedis } from '../lib/redis.js';
+import { getWorkerRedis } from '../lib/redis.js';
 import { QUEUE_NAMES } from '@rootlink/shared';
 import { env } from '../config/env.js';
 import type { EmailNotificationJob } from './queues.js';
@@ -157,7 +157,7 @@ export function startEmailWorker() {
       }
     },
     {
-      connection: getRedis(),
+      connection: getWorkerRedis(),
       concurrency: 10,
     },
   );

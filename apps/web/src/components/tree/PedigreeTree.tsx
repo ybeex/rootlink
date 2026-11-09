@@ -45,7 +45,6 @@ const SIB_GAP  = 20;
 const GEN_GAP  = 100;
 
 const FAN_RING_DEPTH = 90;   // px per generation ring, outward from center
-const FAN_NODE_R     = 34;   // node "radius" used for label sizing at the fan's outer rings
 const FAN_MAX_GEN    = 5;    // generations shown before the fan would get unreadably thin
 
 // ── Shared helpers ───────────────────────────────────────────────────────────
@@ -243,7 +242,10 @@ export const PedigreeTree = forwardRef<PedigreeTreeHandle, TreeProps>(
         }
 
         const linkGen = d3
-          .linkVertical<d3.HierarchyLink<TreeNodeData>, { x: number; y: number }>()
+          .linkVertical<
+            { source: { x: number; y: number }; target: { x: number; y: number } },
+            { x: number; y: number }
+          >()
           .x((d) => d.x)
           .y((d) => d.y);
 
@@ -524,9 +526,10 @@ export const PedigreeTree = forwardRef<PedigreeTreeHandle, TreeProps>(
     // ── Main render effect ────────────────────────────────────────────────────
 
     useEffect(() => {
-      const svg = d3.select(svgRef.current);
+      const el = svgRef.current;
+      if (!el) return;
+      const svg = d3.select(el);
       svg.selectAll('*').remove();
-      if (!svgRef.current) return;
 
       const { width, height } = dimensions;
 

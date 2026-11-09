@@ -1,6 +1,6 @@
 'use client';
 
-import { useParams, useRouter } from 'next/navigation';
+import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
@@ -47,7 +47,6 @@ const TIER_COLORS: Record<string, string> = {
 
 export default function AdminUserDetailPage() {
   const { userId } = useParams<{ userId: string }>();
-  const router  = useRouter();
   const qc      = useQueryClient();
   const [tier, setTier] = useState('');
 

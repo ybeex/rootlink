@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { useTheme } from 'next-themes';
-import { LogOut, Sun, Moon, Monitor, Bell, ChevronLeft, ChevronRight } from 'lucide-react';
+import { LogOut, Sun, Moon, Monitor, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useAuthStore } from '../../store/auth.store';
 import { api } from '../../lib/api-client';
 import { NotificationsPanel } from '../../components/layout/NotificationsPanel';
@@ -62,7 +62,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   if (!isAuthenticated) return null;
 
   const tier = (user?.subscriptionTier ?? 'free') as string;
-  const tierStyle = TIER_COLOR[tier] ?? TIER_COLOR.free;
+  const tierStyle = TIER_COLOR[tier] ?? { bg: 'var(--bg-subtle)', text: 'var(--text-faint)' };
 
   return (
     <div className="flex h-screen overflow-hidden" style={{ background: 'var(--bg-base)' }}>

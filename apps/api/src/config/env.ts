@@ -10,7 +10,7 @@ const envSchema = z.object({
   DB_MAX_CONNECTIONS: z.coerce.number().int().min(1).max(100).default(20),
 
   // Redis
-  REDIS_URL: z.string().default('redis://localhost:6379'),
+  REDIS_URL: z.string().default('redis://127.0.0.1:6380'),
 
   // JWT
   JWT_ACCESS_SECRET: z.string().min(32),
@@ -89,7 +89,10 @@ const envSchema = z.object({
 
   // Monitoring
   LOG_LEVEL: z.enum(['trace', 'debug', 'info', 'warn', 'error', 'fatal']).default('info'),
-  SENTRY_DSN: z.string().url().optional(),
+  SENTRY_DSN: z.preprocess(
+    (value) => (value === '' ? undefined : value),
+    z.string().url().optional(),
+  ),
 });
 
 export type Env = z.infer<typeof envSchema>;

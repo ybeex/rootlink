@@ -40,7 +40,7 @@ function CustomTooltip({ active, payload, label, unit }: {
     >
       <p className="text-2xs mb-0.5" style={{ color: 'var(--text-faint)' }}>{label}</p>
       <p className="text-sm font-semibold tabular-nums" style={{ color: 'var(--text-primary)' }}>
-        {payload[0].value}{unit ?? ''}
+        {payload[0]?.value}{unit ?? ''}
       </p>
     </div>
   );

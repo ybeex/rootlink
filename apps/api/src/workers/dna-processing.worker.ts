@@ -1,6 +1,6 @@
 import { Worker } from 'bullmq';
 import { GetObjectCommand } from '@aws-sdk/client-s3';
-import { getRedis } from '../lib/redis.js';
+import { getWorkerRedis } from '../lib/redis.js';
 import { getS3 } from '../lib/s3.js';
 import { getDb, dnaKits, dnaGenotypes } from '@rootlink/db';
 import { eq } from 'drizzle-orm';
@@ -113,7 +113,7 @@ export function startDnaProcessingWorker() {
       }
     },
     {
-      connection: getRedis(),
+      connection: getWorkerRedis(),
       // Deliberately low concurrency: a single job can hold hundreds of
       // thousands of parsed rows in memory and run 22 chromosome-by-
       // chromosome comparisons against every other ready kit — this is

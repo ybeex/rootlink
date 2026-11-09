@@ -63,7 +63,6 @@ function buildCsp(): string {
 }
 
 const nextConfig: NextConfig = {
-  transpilePackages: ['@rootlink/shared'],
   images: {
     remotePatterns: [
       { protocol: 'https', hostname: '*.amazonaws.com' },

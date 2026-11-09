@@ -8,6 +8,7 @@ import { useMutation } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { Loader2, CheckCircle2 } from 'lucide-react';
 import { RootLinkIcon } from '../../../components/brand/Logo';
+import { AuthShell } from '../../../components/auth/AuthShell';
 import { registerSchema, type RegisterInput } from '@rootlink/shared';
 import { api, ApiClientError } from '../../../lib/api-client';
 
@@ -50,10 +51,8 @@ export default function RegisterPage() {
   });
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center px-4 py-12"
-      style={{ background: 'var(--bg-base)' }}>
-      <div className="w-full max-w-sm rounded-2xl p-8"
-        style={{ background: 'var(--bg-surface)', border: '1px solid var(--border-default)', boxShadow: 'var(--shadow-md)' }}>
+    <AuthShell image="/auth/register.webp" contentClassName="lg:min-h-[32rem]">
+      <div className="w-full max-w-sm">
 
         {/* Header */}
         <div className="mb-8 flex flex-col items-center gap-2">
@@ -137,7 +136,7 @@ export default function RegisterPage() {
           </Link>
         </p>
       </div>
-    </div>
+    </AuthShell>
   );
 }
 

@@ -4,7 +4,7 @@ import { useForm, useFieldArray, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
-import { Plus, Trash2 } from 'lucide-react';
+import { Plus, Trash2, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 
 import { createPersonSchema, type CreatePersonInput } from '@rootlink/shared';
@@ -52,14 +52,14 @@ export function PersonForm({ treeId, existing }: PersonFormProps) {
           privacyLevel: existing.privacyLevel,
           biography:    existing.biography    ?? undefined,
           notes:        existing.notes        ?? undefined,
-          events:       (existing.events ?? []).map((e: Record<string, unknown>) => ({
-            type:        e['type'] as string ?? 'custom',
-            date:        (e['date'] as Record<string, unknown> | null) ?? null,
+          events:       (existing.events ?? []).map((e) => ({
+            type:        e.type,
+            date:        e.date,
             endDate:     null,
-            place:       (e['place'] as Record<string, unknown> | null) ?? null,
-            description: (e['description'] as string | null) ?? null,
-            certainty:   (e['certainty'] as string) ?? 'probable',
-            sourceIds:   (e['sourceIds'] as string[]) ?? [],
+            place:       e.place,
+            description: e.description,
+            certainty:   e.certainty,
+            sourceIds:   e.sourceIds,
           })),
           externalIds:  existing.externalIds ?? {},
         }
@@ -100,7 +100,9 @@ export function PersonForm({ treeId, existing }: PersonFormProps) {
       // this just pauses the redirect for a moment to let the user notice
       // a likely-existing match before they navigate away and lose the
       // context of just having entered this data. See duplicate.service.ts.
-      const duplicates = 'potentialDuplicates' in person ? person.potentialDuplicates : undefined;
+      const duplicates = 'potentialDuplicates' in person
+        ? (person as Person & { potentialDuplicates?: DuplicateMatch[] }).potentialDuplicates
+        : undefined;
       if (!isEditing && duplicates && duplicates.length > 0) {
         setDuplicateWarning({ newPersonId: person.id, matches: duplicates });
         return;

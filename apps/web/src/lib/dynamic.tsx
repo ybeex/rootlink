@@ -1,5 +1,5 @@
 /**
- * apps/web/src/lib/dynamic.ts
+ * apps/web/src/lib/dynamic.tsx
  *
  * Central registry for Next.js dynamic imports.
  *
@@ -18,7 +18,8 @@
  */
 
 import dynamic from 'next/dynamic';
-import { BranchLoader, SkeletonCard } from '../components/ui/BrandedLoader';
+import type { ComponentType } from 'react';
+import { BranchLoader } from '../components/ui/BrandedLoader';
 
 // ── Tree canvas (D3) ──────────────────────────────────────────────────────
 // D3 manipulates DOM directly and reads window dimensions at import time.
@@ -73,7 +74,7 @@ export const DynAreaChart = dynamic(
   { ssr: false }
 );
 export const DynArea = dynamic(
-  () => import('recharts').then(m => ({ default: m.Area })),
+  () => import('recharts').then(m => ({ default: m.Area as unknown as ComponentType<Record<string, unknown>> })),
   { ssr: false }
 );
 export const DynPieChart = dynamic(
@@ -81,7 +82,7 @@ export const DynPieChart = dynamic(
   { ssr: false }
 );
 export const DynPie = dynamic(
-  () => import('recharts').then(m => ({ default: m.Pie })),
+  () => import('recharts').then(m => ({ default: m.Pie as unknown as ComponentType<Record<string, unknown>> })),
   { ssr: false }
 );
 export const DynCell = dynamic(
@@ -97,15 +98,15 @@ export const DynCartesianGrid = dynamic(
   { ssr: false }
 );
 export const DynXAxis = dynamic(
-  () => import('recharts').then(m => ({ default: m.XAxis })),
+  () => import('recharts').then(m => ({ default: m.XAxis as unknown as ComponentType<Record<string, unknown>> })),
   { ssr: false }
 );
 export const DynYAxis = dynamic(
-  () => import('recharts').then(m => ({ default: m.YAxis })),
+  () => import('recharts').then(m => ({ default: m.YAxis as unknown as ComponentType<Record<string, unknown>> })),
   { ssr: false }
 );
 export const DynTooltip = dynamic(
-  () => import('recharts').then(m => ({ default: m.Tooltip })),
+  () => import('recharts').then(m => ({ default: m.Tooltip as unknown as ComponentType<Record<string, unknown>> })),
   { ssr: false }
 );
 

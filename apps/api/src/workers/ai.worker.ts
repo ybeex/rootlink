@@ -1,6 +1,6 @@
 import { Worker } from 'bullmq';
 import Anthropic from '@anthropic-ai/sdk';
-import { getRedis } from '../lib/redis.js';
+import { getWorkerRedis } from '../lib/redis.js';
 import { getDb, persons, vitalEvents, notifications, researchHints } from '@rootlink/db';
 import { eq, and } from 'drizzle-orm';
 import { QUEUE_NAMES } from '@rootlink/shared';
@@ -186,7 +186,7 @@ export function startAiWorkers() {
 
       job.log('Biography generation complete');
     },
-    { connection: getRedis(), concurrency: 3 },
+    { connection: getWorkerRedis(), concurrency: 3 },
   );
 
   const hintWorker = new Worker<AiHintJob>(
@@ -197,7 +197,7 @@ export function startAiWorkers() {
       await fetchHints(personId, treeId);
       job.log('Hint generation complete');
     },
-    { connection: getRedis(), concurrency: 5 },
+    { connection: getWorkerRedis(), concurrency: 5 },
   );
 
   bioWorker.on('failed', (job, err) => {
