@@ -1,6 +1,6 @@
 import { Worker } from 'bullmq';
 import { DeleteObjectCommand } from '@aws-sdk/client-s3';
-import { getRedis } from '../lib/redis.js';
+import { getWorkerRedis } from '../lib/redis.js';
 import { getS3 } from '../lib/s3.js';
 import { env } from '../config/env.js';
 import { QUEUE_NAMES, type MediaDeletionJob } from '@rootlink/shared';
@@ -27,7 +27,7 @@ export function startMediaDeletionWorker() {
       logger.info({ jobId: job.id, count: storageKeys.length }, 'Deleted media object(s) from storage');
     },
     {
-      connection: getRedis(),
+      connection: getWorkerRedis(),
       concurrency: 5,
     },
   ).on('failed', (job, err) => {

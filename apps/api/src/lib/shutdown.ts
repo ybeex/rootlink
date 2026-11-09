@@ -1,6 +1,6 @@
 import type { FastifyInstance } from 'fastify';
 import { allQueues } from '../workers/queues.js';
-import { getRedis } from './redis.js';
+import { closeWorkerRedis, getRedis } from './redis.js';
 
 export function gracefulShutdown(app: FastifyInstance) {
   const shutdown = async (signal: string) => {
@@ -16,8 +16,8 @@ export function gracefulShutdown(app: FastifyInstance) {
       app.log.info('BullMQ queues closed');
 
       // Close Redis
-      await getRedis().quit();
-      app.log.info('Redis connection closed');
+      await Promise.all([getRedis().quit(), closeWorkerRedis()]);
+      app.log.info('Redis connections closed');
 
       process.exit(0);
     } catch (err) {
