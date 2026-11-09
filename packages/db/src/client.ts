@@ -19,7 +19,7 @@ export function createDb(config: DbConfig) {
     max: config.maxConnections ?? 20,
     idle_timeout: config.idleTimeout ?? 30,
     connect_timeout: config.connectTimeout ?? 10,
-    ssl: config.ssl ? 'require' : undefined,
+    ...(config.ssl ? { ssl: 'require' as const } : {}),
     // Connection lifecycle logging
     onnotice: () => undefined,
     // Transform column names from snake_case to camelCase at driver level

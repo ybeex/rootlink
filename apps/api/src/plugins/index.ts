@@ -6,7 +6,7 @@ import rateLimit from '@fastify/rate-limit';
 import multipart from '@fastify/multipart';
 import jwt from '@fastify/jwt';
 import sensible from '@fastify/sensible';
-import requestContext from '@fastify/request-context';
+import { fastifyRequestContext, requestContext } from '@fastify/request-context';
 import swagger from '@fastify/swagger';
 import swaggerUi from '@fastify/swagger-ui';
 import { env } from '../config/env.js';
@@ -84,7 +84,7 @@ export async function registerPlugins(app: FastifyInstance) {
   // ─── Utilities ──────────────────────────────────────────────────────────────
   await app.register(sensible);
 
-  await app.register(requestContext, {
+  await app.register(fastifyRequestContext, {
     defaultStoreValues: {
       requestId: '',
       userId: null as string | null,

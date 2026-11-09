@@ -98,7 +98,7 @@ export default function PricingPage() {
   return (
     <div>
       <section
-        className="bg-cover bg-top bg-no-repeat px-6 pb-12 pt-16 text-center"
+        className="bg-cover bg-top bg-no-repeat px-4 pb-12 pt-12 text-center sm:px-6 sm:pb-14 sm:pt-16"
         style={{ backgroundImage: "url('/pricing-bg.webp')", backgroundColor: 'var(--accent-primary)' }}
       >
         <div className="mx-auto max-w-3xl">
@@ -108,10 +108,10 @@ export default function PricingPage() {
           >
             Pricing
           </span>
-          <h1 className="mt-5 text-balance font-display text-4xl tracking-tight sm:text-5xl" style={{ color: 'white' }}>
+          <h1 className="mt-5 text-balance font-display text-3xl tracking-tight sm:text-4xl lg:text-5xl" style={{ color: 'white' }}>
             Plans sized to the tree, not the wallet.
           </h1>
-          <p className="mx-auto mt-4 max-w-lg text-balance text-lg" style={{ color: 'rgba(255,255,255,0.7)' }}>
+          <p className="mx-auto mt-4 max-w-lg text-balance text-base sm:text-lg" style={{ color: 'rgba(255,255,255,0.7)' }}>
             Every plan includes full GEDCOM export and the same privacy
             guarantees for living relatives. Upgrading only changes how much
             room you have.
@@ -119,12 +119,12 @@ export default function PricingPage() {
         </div>
       </section>
 
-      <section className="mx-auto max-w-6xl px-6 pb-20">
-        <div className="grid gap-6 md:grid-cols-3">
+      <section className="mx-auto max-w-6xl px-4 pb-16 pt-6 sm:px-6 sm:pb-20 sm:pt-8">
+        <div className="grid items-stretch gap-4 md:grid-cols-2 md:gap-6 lg:grid-cols-3">
           {TIERS.map((tier) => (
             <div
               key={tier.name}
-              className="flex flex-col rounded-3xl p-8"
+              className={`flex min-w-0 flex-col rounded-3xl p-6 sm:p-8 ${tier.name === 'Pro' ? 'md:col-span-2 md:w-full md:max-w-md md:justify-self-center lg:col-span-1 lg:max-w-none' : ''}`}
               style={{
                 background: tier.highlighted ? 'var(--accent-primary)' : 'var(--bg-surface)',
                 border: tier.highlighted ? 'none' : '1px solid var(--border-default)',
@@ -159,7 +159,7 @@ export default function PricingPage() {
 
               <Link
                 href="/register"
-                className="mt-6 flex items-center justify-center gap-2 rounded-full py-3 text-sm font-semibold transition-transform hover:scale-[1.02]"
+                className="mt-6 flex min-h-12 items-center justify-center gap-2 rounded-full px-3 py-3 text-center text-sm font-semibold transition-transform hover:scale-[1.02] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
                 style={
                   tier.highlighted
                     ? { background: 'var(--accent-ember)', color: 'white' }
@@ -170,11 +170,11 @@ export default function PricingPage() {
                 <ArrowRight size={14} />
               </Link>
 
-              <ul className="mt-8 flex flex-col gap-3">
+              <ul className="mt-7 flex flex-col gap-3 sm:mt-8">
                 {tier.features.map((f) => (
                   <li
                     key={f}
-                    className="flex items-start gap-2.5 text-sm"
+                    className="flex min-w-0 items-start gap-2.5 text-sm leading-relaxed"
                     style={{ color: tier.highlighted ? 'rgba(255,255,255,0.9)' : 'var(--text-secondary)' }}
                   >
                     <Check
@@ -191,7 +191,7 @@ export default function PricingPage() {
         </div>
       </section>
 
-      <section className="mx-auto max-w-3xl px-6 pb-24">
+      <section className="mx-auto max-w-3xl px-4 pb-16 sm:px-6 sm:pb-24">
         <h2 className="text-center font-display text-2xl tracking-tight">Questions worth asking</h2>
         <div className="mt-8 flex flex-col divide-y" style={{ borderColor: 'var(--border-default)' }}>
           {FAQS.map((faq) => (

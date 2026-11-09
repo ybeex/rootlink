@@ -30,6 +30,33 @@ export function getRedis(): Redis {
   return _redisInstance;
 }
 
+let _workerRedisInstance: Redis | null = null;
+
+/** Redis connection for BullMQ consumers, which must retry indefinitely. */
+export function getWorkerRedis(): Redis {
+  if (!_workerRedisInstance) {
+    _workerRedisInstance = new Redis(env.REDIS_URL, {
+      maxRetriesPerRequest: null,
+      retryStrategy: (times) => Math.min(times * 100, 3000),
+      reconnectOnError: (err) => err.message.includes('READONLY'),
+      lazyConnect: false,
+      enableOfflineQueue: true,
+    });
+
+    _workerRedisInstance.on('error', (err) => {
+      console.error('BullMQ worker Redis connection error:', err.message);
+    });
+  }
+  return _workerRedisInstance;
+}
+
+export async function closeWorkerRedis(): Promise<void> {
+  if (_workerRedisInstance) {
+    await _workerRedisInstance.quit();
+    _workerRedisInstance = null;
+  }
+}
+
 // ─── Cache helpers ────────────────────────────────────────────────────────────
 
 export async function cacheGet<T>(key: string): Promise<T | null> {

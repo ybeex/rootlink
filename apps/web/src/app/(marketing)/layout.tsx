@@ -10,6 +10,7 @@ import { PageTransition } from '../../components/layout/PageTransition';
 const NAV_LINKS = [
   { href: '/features', label: 'Features' },
   { href: '/pricing', label: 'Pricing' },
+  { href: '/blog', label: 'Blog' },
   { href: '/about', label: 'About' },
 ];
 
@@ -49,7 +50,9 @@ function MarketingNav() {
     <header
       className="sticky top-0 z-50 transition-shadow duration-300"
       style={{
-        background: scrolled ? 'var(--bg-surface)' : 'transparent',
+        background: scrolled
+          ? 'var(--bg-surface)'
+          : pathname === '/' ? '#06170f' : 'transparent',
         borderBottom: scrolled ? '1px solid var(--border-default)' : '1px solid transparent',
         boxShadow: scrolled ? 'var(--shadow-xs)' : 'none',
         backdropFilter: scrolled ? 'blur(8px)' : 'none',

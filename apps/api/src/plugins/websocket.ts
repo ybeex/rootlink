@@ -1,7 +1,7 @@
 import type { FastifyInstance } from 'fastify';
 import websocketPlugin from '@fastify/websocket';
 import type { WebSocket } from 'ws';
-import { verify } from 'jsonwebtoken';
+import jwt from 'jsonwebtoken';
 import { getTreePermission } from '../middleware/auth.js';
 import { getRedis } from '../lib/redis.js';
 import { env } from '../config/env.js';
@@ -9,6 +9,7 @@ import { WS_EVENTS } from '@rootlink/shared';
 import pino from 'pino';
 
 const logger = pino({ name: 'websocket' });
+const { verify } = jwt;
 
 interface JwtPayload {
   sub: string;
@@ -62,7 +63,7 @@ const CHANNEL = 'rootlink:ws-events';
 export async function setupRedisPubSub() {
   const subscriber = getRedis().duplicate();
   await subscriber.subscribe(CHANNEL);
-  subscriber.on('message', (_channel, message) => {
+  subscriber.on('message', (_channel: string, message: string) => {
     try {
       const { treeId, event, data, excludeUserId } = JSON.parse(message) as {
         treeId: string; event: string; data: unknown; excludeUserId?: string;

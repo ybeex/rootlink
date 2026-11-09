@@ -1,5 +1,5 @@
 import { Worker } from 'bullmq';
-import { getRedis } from '../lib/redis.js';
+import { getWorkerRedis, cacheDelPattern } from '../lib/redis.js';
 import { getDb, persons, vitalEvents } from '@rootlink/db';
 import { eq } from 'drizzle-orm';
 import { QUEUE_NAMES, computeDataQualityScore, type EventType } from '@rootlink/shared';
@@ -106,7 +106,7 @@ export function startDataQualityWorker() {
       job.log(`Quality score for ${personId}: ${score}`);
     },
     {
-      connection:  getRedis(),
+      connection:  getWorkerRedis(),
       concurrency: 10,
     },
   );

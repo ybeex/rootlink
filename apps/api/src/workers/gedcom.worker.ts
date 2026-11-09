@@ -2,7 +2,7 @@ import { Worker } from 'bullmq';
 import {
   S3Client, GetObjectCommand, PutObjectCommand,
 } from '@aws-sdk/client-s3';
-import { getRedis } from '../lib/redis.js';
+import { getWorkerRedis } from '../lib/redis.js';
 import { getDb, persons, vitalEvents, relationships, trees, notifications } from '@rootlink/db';
 import { eq, and, sql } from 'drizzle-orm';
 import { scanTreeForDuplicatesAfterImport } from '../services/duplicate.service.js';
@@ -453,7 +453,7 @@ export function startGedcomWorkers() {
 
       job.log(`Import complete: ${individuals.length} persons, ${families.length} families`);
     },
-    { connection: getRedis(), concurrency: 2 },
+    { connection: getWorkerRedis(), concurrency: 2 },
   );
 
   // ── Export worker ──────────────────────────────────────────────────────
@@ -492,7 +492,7 @@ export function startGedcomWorkers() {
 
       job.log(`Export complete: ${storageKey}`);
     },
-    { connection: getRedis(), concurrency: 2 },
+    { connection: getWorkerRedis(), concurrency: 2 },
   );
 
   importWorker.on('failed', (job, err) => {
