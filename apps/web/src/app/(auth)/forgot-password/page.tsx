@@ -6,6 +6,7 @@ import { useMutation } from '@tanstack/react-query';
 import Link from 'next/link';
 import { Loader2, CheckCircle2, ChevronLeft } from 'lucide-react';
 import { RootLinkIcon } from '../../../components/brand/Logo';
+import { AuthShell } from '../../../components/auth/AuthShell';
 import type { ForgotPasswordInput } from '@rootlink/shared';
 import { api } from '../../../lib/api-client';
 
@@ -29,10 +30,8 @@ export default function ForgotPasswordPage() {
 
   if (sent) {
     return (
-      <div className="flex min-h-screen items-center justify-center px-4"
-        style={{ background: 'var(--bg-base)' }}>
-        <div className="w-full max-w-sm rounded-2xl p-8 text-center"
-          style={{ background: 'var(--bg-surface)', border: '1px solid var(--border-default)', boxShadow: 'var(--shadow-md)' }}>
+      <AuthShell image="/auth/forgot-password.webp" contentClassName="lg:min-h-[32rem]">
+        <div className="w-full max-w-sm">
           <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl"
             style={{ background: 'rgba(74,124,89,0.12)' }}>
             <CheckCircle2 size={28} style={{ color: '#4a7c59' }} />
@@ -50,15 +49,13 @@ export default function ForgotPasswordPage() {
             Back to sign in
           </Link>
         </div>
-      </div>
+      </AuthShell>
     );
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center px-4"
-      style={{ background: 'var(--bg-base)' }}>
-      <div className="w-full max-w-sm rounded-2xl p-8"
-        style={{ background: 'var(--bg-surface)', border: '1px solid var(--border-default)', boxShadow: 'var(--shadow-md)' }}>
+    <AuthShell image="/auth/forgot-password.webp" contentClassName="lg:min-h-[32rem]">
+      <div className="w-full max-w-sm">
 
         <div className="mb-8 flex flex-col items-center gap-2">
           <RootLinkIcon size={44} />
@@ -109,6 +106,6 @@ export default function ForgotPasswordPage() {
           </Link>
         </div>
       </div>
-    </div>
+    </AuthShell>
   );
 }
