@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState } from 'react';
 
 // ── HeroTree ─────────────────────────────────────────────────────────────────
 // The product's signature hero: an animated pedigree chart drawn on the

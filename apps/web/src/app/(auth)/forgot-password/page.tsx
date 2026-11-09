@@ -7,7 +7,6 @@ import Link from 'next/link';
 import { Loader2, CheckCircle2, ChevronLeft } from 'lucide-react';
 import { RootLinkIcon } from '../../../components/brand/Logo';
 import { AuthShell } from '../../../components/auth/AuthShell';
-import type { ForgotPasswordInput } from '@rootlink/shared';
 import { api } from '../../../lib/api-client';
 
 // Need to add ForgotPasswordInput to shared exports

@@ -8,7 +8,6 @@ import { ArrowLeft } from 'lucide-react';
 import { api } from '../../../lib/api-client';
 import type { User } from '@rootlink/shared';
 import { RootLinkIcon } from '../../../components/brand/Logo';
-import { AdminNavIcon } from '../../../components/brand/icons';
 import { BranchLoader } from '../../../components/ui/BrandedLoader';
 import { PageTransition } from '../../../components/layout/PageTransition';
 

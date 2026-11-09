@@ -257,8 +257,9 @@ export async function generateStaticParams() {
   return Object.keys(POSTS).map(slug => ({ slug }));
 }
 
-export function generateMetadata({ params }: { params: { slug: string } }) {
-  const post = POSTS[params.slug];
+export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params;
+  const post = POSTS[slug];
   if (!post) return {};
   return {
     title: `${post.title} — RootLink`,
@@ -267,11 +268,12 @@ export function generateMetadata({ params }: { params: { slug: string } }) {
   };
 }
 
-export default function BlogPostPage({ params }: { params: { slug: string } }) {
-  const post = POSTS[params.slug];
+export default async function BlogPostPage({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params;
+  const post = POSTS[slug];
   if (!post) notFound();
 
-  const relatedSlugs = RELATED[params.slug] ?? [];
+  const relatedSlugs = RELATED[slug] ?? [];
   const relatedPosts = relatedSlugs.map(s => ({ slug: s, ...POSTS[s] })).filter(Boolean);
 
   return (

@@ -23,7 +23,9 @@ function CustomTooltip({ active, payload, suffix }: {
   suffix?: string;
 }) {
   if (!active || !payload?.length) return null;
-  const { name, value, payload: slice } = payload[0];
+  const first = payload[0];
+  if (!first) return null;
+  const { name, value, payload: slice } = first;
   return (
     <div
       className="rounded-xl px-3 py-2"
