@@ -4,7 +4,7 @@ import { useParams, useRouter } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
 import { ChevronLeft, Calendar, MapPin } from 'lucide-react';
 import Link from 'next/link';
-import { api } from '../../../../lib/api-client';
+import { api } from '@/lib/api-client';
 import type { TimelineEntry } from '@rootlink/shared';
 
 function formatEntryDate(date: TimelineEntry['date']): string {
