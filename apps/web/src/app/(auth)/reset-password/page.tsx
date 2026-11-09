@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Loader2, CheckCircle2, Eye, EyeOff } from 'lucide-react';
 import { RootLinkIcon } from '../../../components/brand/Logo';
+import { AuthShell } from '../../../components/auth/AuthShell';
 import { toast } from 'sonner';
 import { api, ApiClientError } from '../../../lib/api-client';
 import { resetPasswordSchema } from '@rootlink/shared';
@@ -52,8 +53,7 @@ export default function ResetPasswordPage({ searchParams }: Props) {
 
   if (!token) {
     return (
-      <div className="flex min-h-screen items-center justify-center px-4"
-        style={{ background: 'var(--bg-base)' }}>
+      <AuthShell image="/auth/reset-password.webp" contentClassName="lg:min-h-[32rem]">
         <div className="text-center">
           <p className="mb-3 text-sm" style={{ color: 'var(--text-muted)' }}>
             Invalid reset link.
@@ -63,16 +63,14 @@ export default function ResetPasswordPage({ searchParams }: Props) {
             Request a new one
           </Link>
         </div>
-      </div>
+      </AuthShell>
     );
   }
 
   if (done) {
     return (
-      <div className="flex min-h-screen items-center justify-center px-4"
-        style={{ background: 'var(--bg-base)' }}>
-        <div className="w-full max-w-sm rounded-2xl p-8 text-center"
-          style={{ background: 'var(--bg-surface)', border: '1px solid var(--border-default)', boxShadow: 'var(--shadow-md)' }}>
+      <AuthShell image="/auth/reset-password.webp" contentClassName="lg:min-h-[32rem]">
+        <div className="w-full max-w-sm">
           <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl"
             style={{ background: 'rgba(74,124,89,0.12)' }}>
             <CheckCircle2 size={28} style={{ color: '#4a7c59' }} />
@@ -85,15 +83,13 @@ export default function ResetPasswordPage({ searchParams }: Props) {
             Your password has been updated. Redirecting to sign in…
           </p>
         </div>
-      </div>
+      </AuthShell>
     );
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center px-4"
-      style={{ background: 'var(--bg-base)' }}>
-      <div className="w-full max-w-sm rounded-2xl p-8"
-        style={{ background: 'var(--bg-surface)', border: '1px solid var(--border-default)', boxShadow: 'var(--shadow-md)' }}>
+    <AuthShell image="/auth/reset-password.webp" contentClassName="lg:min-h-[32rem]">
+      <div className="w-full max-w-sm">
 
         <div className="mb-8 flex flex-col items-center gap-2">
           <RootLinkIcon size={44} />
@@ -153,6 +149,6 @@ export default function ResetPasswordPage({ searchParams }: Props) {
           </button>
         </form>
       </div>
-    </div>
+    </AuthShell>
   );
 }
