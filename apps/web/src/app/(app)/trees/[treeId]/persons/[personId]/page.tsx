@@ -4,8 +4,8 @@ import { use, useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
 import {
-  ChevronLeft, Pencil, Calendar, MapPin, BookOpen,
-  Camera, Star, Clock, Lightbulb, Zap, Loader2, Route, Search,
+  ChevronLeft, Pencil, Calendar, MapPin,
+  Star, Clock, Zap, Loader2, Route, Search,
 } from 'lucide-react';
 import { motion, useReducedMotion } from 'framer-motion';
 import { toast } from 'sonner';
@@ -96,7 +96,6 @@ export default function PersonDetailPage({ params }: Props) {
 
   const birthEvent  = person.events.find((e) => e.type === 'birth');
   const deathEvent  = person.events.find((e) => e.type === 'death');
-  const otherEvents = person.events.filter((e) => e.type !== 'birth' && e.type !== 'death');
 
   return (
     <div className="mx-auto max-w-3xl px-6 py-10">

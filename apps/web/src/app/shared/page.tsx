@@ -94,10 +94,10 @@ export default function SharedTreePage({ searchParams }: Props) {
           <PedigreeTree
             persons={persons}
             relationships={relationships}
-            selectedPersonId={selectedPersonId}
+            rootPersonId={persons[0]?.id ?? ''}
+            selectedPersonId={selectedPersonId ?? undefined}
             onSelectPerson={setSelectedPersonId}
             viewMode="pedigree"
-            readOnly
             className="absolute inset-0"
           />
         ) : (
@@ -113,11 +113,12 @@ export default function SharedTreePage({ searchParams }: Props) {
         {/* Person panel */}
         {selectedPerson && (
           <PersonPanel
-            person={selectedPerson}
+            personId={selectedPerson.id}
             treeId={tree?.id ?? ''}
             shareToken={token}
             readOnly
             onClose={() => setSelectedPersonId(null)}
+            onEdit={() => undefined}
           />
         )}
 
@@ -157,7 +158,7 @@ export default function SharedTreePage({ searchParams }: Props) {
 // ── Grove header ─────────────────────────────────────────────────────────────
 
 function SharedHeader({
-  tree, token, livingCount, personCount,
+  tree, token: _token, livingCount, personCount,
 }: {
   tree: (Tree & { shareToken?: string }) | null;
   token: string;

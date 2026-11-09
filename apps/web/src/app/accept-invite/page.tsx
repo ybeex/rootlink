@@ -19,7 +19,7 @@ export default function AcceptInvitePage({ searchParams }: Props) {
   const router             = useRouter();
   const { isAuthenticated } = useAuthStore();
   const [status, setStatus] = useState<Status>('idle');
-  const [treeId, setTreeId] = useState<string>('');
+  const [, setTreeId] = useState<string>('');
   const [errorMsg, setErrorMsg] = useState('');
 
   useEffect(() => {

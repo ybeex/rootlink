@@ -164,7 +164,7 @@ export default function AdminUsersPage() {
               const suspended = !!u.deletedAt;
               const locked = !!u.lockedUntil && new Date(u.lockedUntil) > new Date();
               const isEditing = editingId === u.id;
-              const ts = TIER_STYLE[u.subscriptionTier] ?? TIER_STYLE.free;
+              const ts = TIER_STYLE[u.subscriptionTier] ?? { bg: 'var(--bg-subtle)', color: 'var(--text-muted)' };
 
               return (
                 <tr

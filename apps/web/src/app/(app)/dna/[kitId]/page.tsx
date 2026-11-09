@@ -71,7 +71,7 @@ export default function DnaMatchesPage({ params }: Props) {
             No matches yet
           </h3>
           <p className="mt-2 text-sm leading-relaxed max-w-sm" style={{ color: 'var(--text-muted)' }}>
-            This kit hasn't matched against any other processed kit yet. New matches appear automatically
+            This kit hasn&apos;t matched against any other processed kit yet. New matches appear automatically
             as more members upload their own DNA.
           </p>
         </div>

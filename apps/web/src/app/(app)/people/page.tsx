@@ -3,10 +3,9 @@
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { motion, useReducedMotion } from 'framer-motion';
-import { Search, Users, SlidersHorizontal, ChevronRight } from 'lucide-react';
+import { Search, Users, ChevronRight } from 'lucide-react';
 import Link from 'next/link';
 import { api } from '../../../lib/api-client';
-import { getDisplayName } from '@rootlink/shared';
 import type { PersonSummary, Tree, PaginatedResponse } from '@rootlink/shared';
 
 interface TreeWithRole extends Tree { role: string }
@@ -229,7 +228,7 @@ function EmptyNoTree() {
   );
 }
 
-function EmptyNoResults({ search, treeId }: { search: string; treeId: string }) {
+function EmptyNoResults({ search, treeId: _treeId }: { search: string; treeId: string }) {
   return (
     <div className="py-20 text-center">
       <Search size={28} className="mx-auto mb-3" style={{ color: 'var(--text-faint)' }} />

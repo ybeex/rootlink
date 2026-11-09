@@ -3,12 +3,11 @@
 import { useState, useEffect, useRef } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
-import { Search, Users, BookOpen, Clock, X, ArrowRight } from 'lucide-react';
+import { Search, Users, Clock, X, ArrowRight } from 'lucide-react';
 import Link from 'next/link';
 import { TreeNavIcon } from '../../../components/brand/icons';
 import { useDebounce } from '../../../hooks/useDebounce';
 import { api } from '../../../lib/api-client';
-import { getDisplayName } from '@rootlink/shared';
 import type { PersonSummary, Tree, PaginatedResponse } from '@rootlink/shared';
 
 interface SearchResults {

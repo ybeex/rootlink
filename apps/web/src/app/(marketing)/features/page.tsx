@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import {
-  GitBranch, Users2, Image as ImageIcon, BookOpen, FileDown, Sparkles,
+  GitBranch, Users2, ImageIcon, BookOpen, FileDown, Sparkles,
   History, KeyRound, ArrowRight, ScanSearch,
 } from 'lucide-react';
 
