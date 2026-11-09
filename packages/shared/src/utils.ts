@@ -120,7 +120,13 @@ export function isPersonPrivacyRestricted(
   }
 
   // 'private': requires at least editor
-  const ROLE_RANK = { viewer: 1, contributor: 2, editor: 3, admin: 4, owner: 5 } as const;
+  const ROLE_RANK: Record<NonNullable<typeof viewer.role>, number> = {
+    viewer: 1,
+    contributor: 2,
+    editor: 3,
+    admin: 4,
+    owner: 5,
+  };
   if (viewer.isShareTokenViewer || viewer.role === null) return true;
   return ROLE_RANK[viewer.role] < ROLE_RANK.editor;
 }
