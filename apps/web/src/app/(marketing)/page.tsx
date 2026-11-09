@@ -16,7 +16,7 @@ export default function LandingPage() {
       <LandingAuthRedirect />
 
       {/* ── HERO — Grove mode ──────────────────────────────────────────── */}
-      <section className="hero-bg min-h-screen flex flex-col" style={{ background: '#06170f' }}>
+      <section className="hero-bg min-h-[calc(100svh-4rem)] flex flex-col" style={{ background: '#06170f' }}>
         {/* Hero artwork: tree sits right on desktop; dimmed behind the text on small screens */}
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src="/hero-tree.webp" alt="" aria-hidden="true" fetchPriority="high"
@@ -24,36 +24,6 @@ export default function LandingPage() {
           style={{ objectPosition: '75% center' }} />
         <div aria-hidden="true" className="absolute inset-0 z-0 lg:hidden"
           style={{ background: 'linear-gradient(180deg, rgba(6,23,15,0.55), rgba(6,23,15,0.85))' }} />
-        {/* Nav */}
-        <nav className="flex items-center justify-between px-8 py-5 relative z-10">
-          <RootLinkLogo size="md" inverted />
-          <div className="hidden md:flex items-center gap-8">
-            {[
-              ['Features', '/features'],
-              ['Pricing', '/pricing'],
-              ['Blog', '/blog'],
-              ['About', '/about'],
-            ].map(([label, href]) => (
-              <Link key={href} href={href}
-                className="text-sm font-medium transition-opacity hover:opacity-70"
-                style={{ color: 'rgba(255,255,255,0.65)' }}>
-                {label}
-              </Link>
-            ))}
-          </div>
-          <div className="flex items-center gap-3">
-            <Link href="/login"
-              className="hidden sm:inline text-sm font-medium transition-opacity hover:opacity-70"
-              style={{ color: 'rgba(255,255,255,0.55)' }}>
-              Log in
-            </Link>
-            <Link href="/register"
-              className="btn btn-amber px-4 py-2 text-sm">
-              Start free
-            </Link>
-          </div>
-        </nav>
-
         {/* Hero content */}
         <div className="flex-1 flex flex-col items-center lg:items-start justify-center px-6 lg:pl-16 xl:pl-24 pt-8 pb-20 relative z-10 text-center lg:text-left w-full max-w-3xl mx-auto lg:mx-0 lg:max-w-[42rem]">
           {/* Y-Combinator / trust signal */}
@@ -188,12 +158,12 @@ export default function LandingPage() {
             </Link>
           </div>
 
-          <div className="grid gap-5 sm:grid-cols-3">
-            {BLOG_POSTS.slice(0, 3).map(post => (
+          <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
+            {BLOG_POSTS.slice(0, 3).map((post, index) => (
               <Link key={post.slug} href={`/blog/${post.slug}`}
-                className="group card card-lift p-5 flex flex-col gap-3">
+                className={`group card card-lift flex flex-col gap-3 p-5 ${index === 2 ? 'md:col-span-2 md:mx-auto md:w-full md:max-w-[calc(50%-0.625rem)] lg:col-span-1 lg:mx-0 lg:max-w-none' : ''}`}>
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={post.image} alt="" className="-mx-5 -mt-5 mb-1 rounded-t-2xl"
+                <img src={post.image} alt="" className="-mx-5 -mt-5 mb-1 block w-[calc(100%+2.5rem)] max-w-none shrink-0 rounded-t-2xl"
                   style={{ aspectRatio: '1200 / 630', objectFit: 'cover' }} />
                 <span className="text-2xs font-mono uppercase tracking-wider px-2 py-0.5 rounded-full w-fit"
                   style={{ background: 'var(--accent-ember-soft)', color: 'var(--accent-ember)' }}>
